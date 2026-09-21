@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import { formatBRL } from "@/lib/utils";
 import { AdvertiserStatusToggle } from "@/components/admin/advertiser-status-toggle";
+import { AdvertiserDeleteButton } from "@/components/admin/advertiser-delete-button";
 
 export const metadata: Metadata = { title: "Detalhes do anunciante" };
 
@@ -40,7 +41,13 @@ export default async function AdvertiserDetailPage({ params }: { params: Promise
           </h1>
           <p className="text-sm text-neutral-500">{advertiser.email} · {advertiser.phone}</p>
         </div>
-        <AdvertiserStatusToggle profileId={advertiser.id} status={advertiser.status} />
+        <div className="flex flex-wrap gap-2">
+          <AdvertiserStatusToggle profileId={advertiser.id} status={advertiser.status} />
+          <AdvertiserDeleteButton
+            profileId={advertiser.id}
+            name={advertiser.company_name || advertiser.full_name || advertiser.email}
+          />
+        </div>
       </div>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">

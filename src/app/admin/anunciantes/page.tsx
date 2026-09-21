@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 
 export const metadata: Metadata = { title: "Anunciantes" };
 
@@ -15,7 +16,12 @@ export default async function AnunciantesPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-neutral-900">Anunciantes</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold text-neutral-900">Anunciantes</h1>
+        <Link href="/admin/anunciantes/novo" className={buttonVariants()}>
+          Novo anunciante
+        </Link>
+      </div>
 
       <div className="mt-6 overflow-hidden rounded-lg border border-neutral-200 bg-white">
         <table className="w-full text-left text-sm">
