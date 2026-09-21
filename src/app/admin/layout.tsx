@@ -1,15 +1,14 @@
 import { redirect } from "next/navigation";
-import { LayoutDashboard, Users, ListChecks, CreditCard, Tag, Settings } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { DashboardSidebar, type SidebarLink } from "@/components/dashboard/sidebar";
 
 const links: SidebarLink[] = [
-  { href: "/admin", label: "Visão geral", icon: LayoutDashboard },
-  { href: "/admin/anunciantes", label: "Anunciantes", icon: Users },
-  { href: "/admin/anuncios", label: "Anúncios", icon: ListChecks },
-  { href: "/admin/planos", label: "Planos", icon: CreditCard },
-  { href: "/admin/categorias", label: "Categorias", icon: Tag },
-  { href: "/admin/configuracoes", label: "Configurações", icon: Settings },
+  { href: "/admin", label: "Visão geral", icon: "layout-dashboard" },
+  { href: "/admin/anunciantes", label: "Anunciantes", icon: "users" },
+  { href: "/admin/anuncios", label: "Anúncios", icon: "list-checks" },
+  { href: "/admin/planos", label: "Planos", icon: "credit-card" },
+  { href: "/admin/categorias", label: "Categorias", icon: "tag" },
+  { href: "/admin/configuracoes", label: "Configurações", icon: "settings" },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

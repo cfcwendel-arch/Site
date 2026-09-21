@@ -5,10 +5,36 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/site/logo";
 import { signOutAction } from "@/app/actions/auth";
-import { LogOut } from "lucide-react";
+import {
+  LogOut,
+  LayoutDashboard,
+  ListChecks,
+  PlusCircle,
+  CreditCard,
+  UserCircle,
+  Users,
+  Tag,
+  Settings,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
-export type SidebarLink = { href: string; label: string; icon: LucideIcon };
+// Server Components can't pass component/function references as props to
+// Client Components across the RSC boundary — only plain serializable data.
+// Layouts pass an icon *name*; this map resolves it to the actual component
+// here on the client side.
+const iconMap = {
+  "layout-dashboard": LayoutDashboard,
+  "list-checks": ListChecks,
+  "plus-circle": PlusCircle,
+  "credit-card": CreditCard,
+  "user-circle": UserCircle,
+  users: Users,
+  tag: Tag,
+  settings: Settings,
+} satisfies Record<string, LucideIcon>;
+
+export type SidebarIconName = keyof typeof iconMap;
+export type SidebarLink = { href: string; label: string; icon: SidebarIconName };
 
 export function DashboardSidebar({
   links,
@@ -28,7 +54,7 @@ export function DashboardSidebar({
       <nav className="flex-1 space-y-1 p-3">
         {links.map((link) => {
           const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
-          const Icon = link.icon;
+          const Icon = iconMap[link.icon];
           return (
             <Link
               key={link.href}

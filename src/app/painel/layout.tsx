@@ -1,14 +1,13 @@
 import { redirect } from "next/navigation";
-import { LayoutDashboard, ListChecks, PlusCircle, CreditCard, UserCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { DashboardSidebar, type SidebarLink } from "@/components/dashboard/sidebar";
 
 const links: SidebarLink[] = [
-  { href: "/painel", label: "Visão geral", icon: LayoutDashboard },
-  { href: "/painel/anuncios", label: "Meus anúncios", icon: ListChecks },
-  { href: "/painel/anuncios/novo", label: "Novo anúncio", icon: PlusCircle },
-  { href: "/painel/assinatura", label: "Assinatura", icon: CreditCard },
-  { href: "/painel/perfil", label: "Meu perfil", icon: UserCircle },
+  { href: "/painel", label: "Visão geral", icon: "layout-dashboard" },
+  { href: "/painel/anuncios", label: "Meus anúncios", icon: "list-checks" },
+  { href: "/painel/anuncios/novo", label: "Novo anúncio", icon: "plus-circle" },
+  { href: "/painel/assinatura", label: "Assinatura", icon: "credit-card" },
+  { href: "/painel/perfil", label: "Meu perfil", icon: "user-circle" },
 ];
 
 export default async function PainelLayout({ children }: { children: React.ReactNode }) {
