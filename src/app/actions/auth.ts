@@ -81,7 +81,13 @@ export async function signInAction(_prev: ActionState, formData: FormData): Prom
   });
 
   if (error) {
-    return { error: "E-mail ou senha incorretos." };
+    const isUnconfirmed =
+      error.code === "email_not_confirmed" || error.message.toLowerCase().includes("not confirmed");
+    return {
+      error: isUnconfirmed
+        ? "Confirme seu e-mail antes de entrar. Verifique a caixa de entrada (e o spam) do e-mail cadastrado."
+        : "E-mail ou senha incorretos.",
+    };
   }
 
   const redirectTo = String(formData.get("redirectTo") || "");
