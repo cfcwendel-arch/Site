@@ -27,6 +27,7 @@ export async function signUpAction(_prev: ActionState, formData: FormData): Prom
   }
 
   const supabase = await createClient();
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   const { error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
@@ -36,6 +37,7 @@ export async function signUpAction(_prev: ActionState, formData: FormData): Prom
         company_name: parsed.data.companyName || null,
         phone: parsed.data.phone,
       },
+      emailRedirectTo: `${siteUrl}/auth/callback?next=/painel`,
     },
   });
 
