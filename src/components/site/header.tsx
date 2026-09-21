@@ -11,22 +11,39 @@ const navLinks = [
   { href: "/contato", label: "Contato" },
 ];
 
-export async function SiteHeader() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+async function getHeaderAuthState() {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  let role: string | null = null;
-  if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-    role = profile?.role ?? null;
+    let role: string | null = null;
+    if (user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+      role = profile?.role ?? null;
+    }
+
+    return { user, role };
+  } catch (err) {
+    // Never swallow Next.js's own internal control-flow signals (redirect(),
+    // notFound(), the DYNAMIC_SERVER_USAGE bailout during static generation) —
+    // only degrade gracefully on a genuine Supabase/network failure.
+    const digest = (err as { digest?: string } | null)?.digest;
+    if (typeof digest === "string" && (digest.startsWith("NEXT_") || digest === "DYNAMIC_SERVER_USAGE")) {
+      throw err;
+    }
+    console.error("Erro ao carregar sessão no cabeçalho", err);
+    return { user: null, role: null };
   }
+}
 
+export async function SiteHeader() {
+  const { user, role } = await getHeaderAuthState();
   const dashboardHref = role === "admin" ? "/admin" : "/painel";
 
   return (
