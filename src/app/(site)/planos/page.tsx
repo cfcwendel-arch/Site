@@ -18,10 +18,15 @@ export default async function PlanosPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-2xl text-center">
-        <h1 className="text-3xl font-bold text-neutral-900">Planos para anunciantes</h1>
+        <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-green-800">
+          0% de comissão sobre a venda
+        </span>
+        <h1 className="mt-4 text-3xl font-bold text-neutral-900 sm:text-4xl">
+          Anuncie sua máquina. Você define o valor, o comprador te encontra.
+        </h1>
         <p className="mt-3 text-neutral-600">
-          Escolha o plano ideal para o seu volume de máquinas e veículos. Sem contrato de
-          fidelidade, cancele quando quiser.
+          Assine um plano mensal e publique seus anúncios sem taxa sobre a venda: o negócio
+          inteiro fica com você. Sem contrato de fidelidade, cancele quando quiser.
         </p>
       </div>
 
@@ -63,7 +68,7 @@ export default async function PlanosPage() {
                 href={`/cadastro?plano=${plan.slug}`}
                 className={cn(buttonVariants({ variant: highlighted ? "default" : "outline" }), "mt-6")}
               >
-                Assinar {plan.name}
+                Anunciar no {plan.name}
               </Link>
             </div>
           );
