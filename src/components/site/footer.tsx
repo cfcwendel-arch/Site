@@ -6,7 +6,7 @@ export function SiteFooter() {
     <footer className="border-t border-neutral-200 bg-neutral-50">
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-4 lg:px-8">
         <div>
-          <Logo />
+          <Logo compact={false} />
           <p className="mt-4 max-w-xs text-sm text-neutral-600">
             O marketplace de máquinas e veículos do agronegócio. Conectamos quem vende com quem
             precisa produzir mais.

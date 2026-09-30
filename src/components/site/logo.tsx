@@ -1,28 +1,34 @@
 import Link from "next/link";
+import { Tractor } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function Logo({ className }: { className?: string }) {
+export function Logo({
+  className,
+  compact = true,
+}: {
+  className?: string;
+  /** Truncates the tagline to one line — use false where there's room to wrap (e.g. the footer). */
+  compact?: boolean;
+}) {
   return (
     <Link href="/" className={cn("flex items-center gap-2.5", className)}>
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-700">
-        <svg viewBox="0 0 24 24" className="h-5 w-5 text-white" fill="none" aria-hidden="true">
-          <path
-            d="M12 21c-4.5-1-8-4.8-8-10 0-3 1-6 3-8 1 3 2.5 4.5 5 5.5-1-2-1-4 0-6 3 1.5 5 4 5 8 0 5.2-3.5 9-5 10.5"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path d="M12 21V9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-        </svg>
+      <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-green">
+        <span className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white">
+          <Tractor className="h-4 w-4 text-white" strokeWidth={2.25} aria-hidden="true" />
+        </span>
       </span>
       <span className="leading-tight">
-        <span className="block text-lg font-bold tracking-tight">
-          <span className="text-green-700">Agro</span>
-          <span className="text-neutral-900">Negocia</span>
+        <span className="block text-lg font-extrabold tracking-tight">
+          <span className="text-brand-green">Agro</span>
+          <span className="text-brand-gold">Negocia</span>
         </span>
-        <span className="block text-[10px] font-semibold uppercase tracking-widest text-neutral-500">
-          Máquinas e Veículos
+        <span
+          className={cn(
+            "block text-[10px] font-semibold uppercase tracking-widest text-neutral-500",
+            compact ? "max-w-[190px] truncate" : "max-w-[220px]",
+          )}
+        >
+          Compra e venda de veículos e implementos agrícolas
         </span>
       </span>
     </Link>

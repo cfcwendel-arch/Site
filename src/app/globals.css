@@ -3,11 +3,20 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  /* AgroNegocia brand identity */
+  --brand-green: #09612f;
+  --brand-green-dark: #06491f;
+  --brand-gold: #e9a006;
+  --brand-gold-dark: #c6870a;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-brand-green: var(--brand-green);
+  --color-brand-green-dark: var(--brand-green-dark);
+  --color-brand-gold: var(--brand-gold);
+  --color-brand-gold-dark: var(--brand-gold-dark);
 }
 
 body {

@@ -18,7 +18,7 @@ export default async function PlanosPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-2xl text-center">
-        <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-green-800">
+        <span className="inline-flex items-center rounded-full bg-brand-gold/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand-gold-dark">
           0% de comissão sobre a venda
         </span>
         <h1 className="mt-4 text-3xl font-bold text-neutral-900 sm:text-4xl">
@@ -39,17 +39,17 @@ export default async function PlanosPage() {
               key={plan.id}
               className={cn(
                 "flex flex-col rounded-xl border p-6",
-                highlighted ? "border-green-700 shadow-lg ring-1 ring-green-700" : "border-neutral-200",
+                highlighted ? "border-brand-gold shadow-lg ring-1 ring-brand-gold" : "border-neutral-200",
               )}
             >
               {highlighted && (
-                <span className="mb-3 w-fit rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-800">
+                <span className="mb-3 w-fit rounded-full bg-brand-gold/15 px-3 py-1 text-xs font-semibold text-brand-gold-dark">
                   Mais popular
                 </span>
               )}
               <h2 className="text-lg font-bold text-neutral-900">{plan.name}</h2>
               <p className="mt-1 text-sm text-neutral-500">{plan.description}</p>
-              <p className="mt-4 text-3xl font-bold text-neutral-900">
+              <p className="mt-4 text-3xl font-bold text-brand-gold-dark">
                 {formatBRL(plan.price_cents)}
                 <span className="text-sm font-normal text-neutral-500">/mês</span>
               </p>
@@ -66,7 +66,7 @@ export default async function PlanosPage() {
               </ul>
               <Link
                 href={`/cadastro?plano=${plan.slug}`}
-                className={cn(buttonVariants({ variant: highlighted ? "default" : "outline" }), "mt-6")}
+                className={cn(buttonVariants({ variant: highlighted ? "gold" : "outline" }), "mt-6")}
               >
                 Anunciar no {plan.name}
               </Link>
