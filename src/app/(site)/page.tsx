@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Search, ShieldCheck, TrendingUp, Users } from "lucide-react";
+import { Gift, Search, ShieldCheck, TrendingUp, Users } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ListingCard } from "@/components/site/listing-card";
@@ -25,6 +25,12 @@ export default async function HomePage() {
       <section className="relative overflow-hidden bg-gradient-to-b from-green-50 to-white">
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
           <div className="max-w-2xl">
+            <Link
+              href="/cadastro"
+              className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-brand-gold/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand-gold-dark hover:bg-brand-gold/25"
+            >
+              <Gift className="h-3.5 w-3.5" /> 1º mês de anúncio grátis
+            </Link>
             <h1 className="text-3xl font-bold tracking-tight text-neutral-900 sm:text-5xl">
               Compre e venda máquinas e veículos do agro com segurança
             </h1>
@@ -43,7 +49,7 @@ export default async function HomePage() {
 
             <div className="mt-6 flex flex-wrap gap-3">
               <Link href="/cadastro" className={buttonVariants({ variant: "outline" })}>
-                Quero anunciar minhas máquinas
+                Anunciar grátis no 1º mês
               </Link>
               <Link href="/planos" className={buttonVariants({ variant: "ghost" })}>
                 Ver planos de assinatura

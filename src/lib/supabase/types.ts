@@ -399,6 +399,7 @@ export type Database = {
           created_at: string
           current_period_end: string | null
           id: string
+          is_trial: boolean
           mercadopago_preapproval_id: string | null
           plan_id: string
           status: string
@@ -409,6 +410,7 @@ export type Database = {
           created_at?: string
           current_period_end?: string | null
           id?: string
+          is_trial?: boolean
           mercadopago_preapproval_id?: string | null
           plan_id: string
           status?: string
@@ -419,6 +421,7 @@ export type Database = {
           created_at?: string
           current_period_end?: string | null
           id?: string
+          is_trial?: boolean
           mercadopago_preapproval_id?: string | null
           plan_id?: string
           status?: string
@@ -459,6 +462,10 @@ export type Database = {
       increment_listing_views: {
         Args: { p_listing_id: string }
         Returns: undefined
+      }
+      start_free_trial: {
+        Args: { p_plan_id: string }
+        Returns: string
       }
       create_pending_subscription: {
         Args: { p_plan_id: string }
