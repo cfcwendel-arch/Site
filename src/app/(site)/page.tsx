@@ -3,17 +3,27 @@ import { Search, ShieldCheck, TrendingUp, Users } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ListingCard } from "@/components/site/listing-card";
+import { AdBanner, AdLabel, AdPlaceholder } from "@/components/site/ad-banner";
 import { getCategories, getFeaturedListings } from "@/lib/listings";
+import { AD_PLACEMENTS, getActiveAds } from "@/lib/ads";
 import * as LucideIcons from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default async function HomePage() {
-  const [categories, featured] = await Promise.all([getCategories(), getFeaturedListings(8)]);
+  const [categories, featured, homeAds] = await Promise.all([
+    getCategories(),
+    getFeaturedListings(8),
+    getActiveAds("home"),
+  ]);
+  // Sem banners: mostra uma fileira de espaços livres. Com banners: só um convite no fim,
+  // para a vitrine não ficar pesada com dezenas de quadros vazios.
+  const freeSlots =
+    homeAds.length === 0 ? 5 : homeAds.length < AD_PLACEMENTS.home.slots ? 1 : 0;
 
   return (
     <div>
       <section className="relative overflow-hidden bg-gradient-to-b from-green-50 to-white">
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
           <div className="max-w-2xl">
             <h1 className="text-3xl font-bold tracking-tight text-neutral-900 sm:text-5xl">
               Compre e venda máquinas e veículos do agro com segurança
@@ -39,6 +49,30 @@ export default async function HomePage() {
                 Ver planos de assinatura
               </Link>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="vitrine-publicidade" className="border-y border-amber-100 bg-amber-50/40">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <h2 id="vitrine-publicidade" className="text-lg font-bold text-neutral-900">
+                Vitrine de anunciantes
+              </h2>
+              <AdLabel />
+            </div>
+            <Link href="/contato" className="text-sm font-medium text-green-700 hover:underline">
+              Quero anunciar aqui
+            </Link>
+          </div>
+          <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 lg:grid-cols-5">
+            {homeAds.map((ad) => (
+              <AdBanner key={ad.id} ad={ad} />
+            ))}
+            {Array.from({ length: freeSlots }, (_, i) => (
+              <AdPlaceholder key={`livre-${i}`} />
+            ))}
           </div>
         </div>
       </section>

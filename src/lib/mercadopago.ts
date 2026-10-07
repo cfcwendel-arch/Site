@@ -1,5 +1,5 @@
 import "server-only";
-import { MercadoPagoConfig, PreApproval } from "mercadopago";
+import { MercadoPagoConfig, Payment, PreApproval } from "mercadopago";
 
 export function getMercadoPagoClient() {
   const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
@@ -11,4 +11,8 @@ export function getMercadoPagoClient() {
 
 export function getPreApprovalClient() {
   return new PreApproval(getMercadoPagoClient());
+}
+
+export function getPaymentClient() {
+  return new Payment(getMercadoPagoClient());
 }

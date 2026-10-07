@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ListingCard } from "@/components/site/listing-card";
@@ -5,11 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { getApprovedListings, getCategories } from "@/lib/listings";
+import { AdBanner } from "@/components/site/ad-banner";
+import { getActiveAds } from "@/lib/ads";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Anúncios de máquinas e veículos",
 };
+
+const ADS_EVERY = 4;
 
 const states = [
   "AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR",
@@ -28,9 +33,10 @@ export default async function AnunciosPage({
   const condition = typeof params.condicao === "string" ? params.condicao : undefined;
   const page = params.pagina ? Number(params.pagina) : 1;
 
-  const [{ listings, total, pageSize }, categories] = await Promise.all([
+  const [{ listings, total, pageSize }, categories, gridAds] = await Promise.all([
     getApprovedListings({ q, category, state, condition, page }),
     getCategories(),
+    getActiveAds("listing_grid"),
   ]);
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
@@ -78,9 +84,18 @@ export default async function AnunciosPage({
         </div>
       ) : (
         <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {listings.map((listing) => (
-            <ListingCard key={listing.id} listing={listing} />
-          ))}
+          {listings.map((listing, index) => {
+            // Um banner a cada 4 produtos (uma fileira no desktop), sem passar do fim da lista.
+            const ad = (index + 1) % ADS_EVERY === 0 && index + 1 < listings.length
+              ? gridAds[(index + 1) / ADS_EVERY - 1]
+              : undefined;
+            return (
+              <Fragment key={listing.id}>
+                <ListingCard listing={listing} />
+                {ad && <AdBanner ad={ad} />}
+              </Fragment>
+            );
+          })}
         </div>
       )}
 
