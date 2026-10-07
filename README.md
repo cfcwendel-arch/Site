@@ -68,6 +68,33 @@ Qualquer outro e-mail cadastrado vira `advertiser` (anunciante) por padrão.
 Sem essas três variáveis preenchidas em produção, o fluxo de "Assinar plano" e a ativação
 automática de assinaturas não funcionam.
 
+## Publicidade (banners)
+
+O admin gerencia os banners em **/admin/publicidade** — incluir, pausar, reordenar ou
+excluir um banner não exige mexer no código. Espaços disponíveis:
+
+| Espaço | Onde aparece | Qtd. exibida |
+| --- | --- | --- |
+| `home` | Vitrine logo abaixo do topo da página inicial | até 20 |
+| `listing_side` | Página do produto, ao lado das fotos | até 2 |
+| `listing_inline` | Página do produto, faixa entre as fotos e a descrição | 1 |
+| `listing_grid` | Lista de anúncios, um banner a cada 4 produtos | até 3 |
+
+Todo banner aparece com a etiqueta **“Publicidade”** e borda própria, para não se
+confundir com os anúncios dos clientes. Cada banner pode ter link e período de veiculação
+(início/fim); fora do período ele some sozinho. As imagens ficam no bucket `ad-images`.
+
+## Pagamento via Pix
+
+Além da assinatura recorrente no cartão, o anunciante pode pagar com **Pix** em
+`/painel/assinatura`: o site gera o QR Code / Pix Copia e Cola pelo Mercado Pago (mesmo
+`MERCADOPAGO_ACCESS_TOKEN`), e cada Pix aprovado libera **1 mês** do plano. A confirmação
+chega pelo mesmo webhook (`/api/mercadopago/webhook`, evento `payment`) e a tela do QR Code
+também confere o status sozinha. Para renovar, o anunciante gera um novo Pix na mesma tela.
+Vencido o período (com 3 dias de tolerância), não dá pra publicar novos anúncios até renovar.
+
+A conta do Mercado Pago precisa ter uma **chave Pix cadastrada** para gerar cobranças Pix.
+
 ## Segurança
 
 - Row Level Security (RLS) ativado em **todas** as tabelas: anunciantes só enxergam e

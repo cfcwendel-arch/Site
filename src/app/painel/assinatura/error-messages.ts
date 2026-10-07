@@ -3,6 +3,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   ja_existe: "Você já tem uma assinatura pendente ou ativa.",
   falha_iniciar: "Não foi possível iniciar a assinatura. Tente novamente.",
   mp_indisponivel: "Mercado Pago não configurado ou indisponível no momento.",
+  cartao_ativo: "Sua assinatura no cartão já renova automaticamente — não é preciso pagar via Pix.",
+  pix_invalido: "Pagamento Pix não encontrado.",
 };
 
 export function subscriptionErrorMessage(code?: string) {

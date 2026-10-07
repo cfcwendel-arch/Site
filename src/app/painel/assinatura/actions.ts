@@ -3,7 +3,8 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getPreApprovalClient } from "@/lib/mercadopago";
+import { getPaymentClient, getPreApprovalClient } from "@/lib/mercadopago";
+import { PIX_REFERENCE_PREFIX, pixExpirationDate } from "@/lib/pix";
 
 export async function subscribeToPlanAction(planId: string): Promise<void> {
   const supabase = await createClient();
@@ -85,4 +86,84 @@ export async function cancelSubscriptionAction(subscriptionId: string): Promise<
 
   await supabase.rpc("cancel_own_subscription", { p_subscription_id: subscriptionId });
   revalidatePath("/painel/assinatura");
+}
+
+/**
+ * Gera um QR Code Pix para pagar 1 mês do plano. Pix não é recorrente: quando o período
+ * pago termina, o anunciante gera um novo Pix pela mesma tela para renovar.
+ * - Sem assinatura: cria uma pendente para o plano escolhido.
+ * - Assinatura já paga por Pix (pendente, ativa ou vencida): paga/renova a mesma.
+ * - Checkout de cartão abandonado (pendente com preapproval): descarta e começa pelo Pix.
+ */
+export async function payWithPixAction(planId: string): Promise<void> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/entrar?redirect=/painel/assinatura");
+
+  const { data: existing } = await supabase
+    .from("subscriptions")
+    .select("id, status, plan_id, mercadopago_preapproval_id")
+    .eq("advertiser_id", user.id)
+    .in("status", ["pending", "active", "past_due"])
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  let subscriptionId: string | null = null;
+
+  if (existing && !existing.mercadopago_preapproval_id) {
+    subscriptionId = existing.id;
+  } else {
+    if (existing?.mercadopago_preapproval_id) {
+      // Assinatura no cartão já ativa renova sozinha — não faz sentido pagar Pix por cima.
+      if (existing.status !== "pending") redirect("/painel/assinatura?erro=cartao_ativo");
+      await supabase.rpc("cancel_own_subscription", { p_subscription_id: existing.id });
+    }
+
+    const { data: createdId, error: rpcError } = await supabase.rpc("create_pending_subscription", {
+      p_plan_id: planId,
+    });
+    if (rpcError || !createdId) {
+      if (rpcError?.message.includes("subscription_already_exists")) {
+        redirect("/painel/assinatura?erro=ja_existe");
+      }
+      redirect("/painel/assinatura?erro=falha_iniciar");
+    }
+    subscriptionId = createdId;
+  }
+
+  const { data: subscription } = await supabase
+    .from("subscriptions")
+    .select("id, plans(name, price_cents)")
+    .eq("id", subscriptionId)
+    .maybeSingle();
+  const plan = subscription?.plans;
+  if (!plan || plan.price_cents <= 0) redirect("/painel/assinatura?erro=plano_invalido");
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  let paymentId: string | null = null;
+
+  try {
+    const payment = await getPaymentClient().create({
+      body: {
+        transaction_amount: plan.price_cents / 100,
+        description: `AgroNegocia - Plano ${plan.name} (1 mês)`,
+        payment_method_id: "pix",
+        payer: { email: user.email! },
+        external_reference: `${PIX_REFERENCE_PREFIX}${subscriptionId}`,
+        date_of_expiration: pixExpirationDate(),
+        // O Mercado Pago só aceita URL pública https para notificações.
+        ...(siteUrl.startsWith("https://") ? { notification_url: `${siteUrl}/api/mercadopago/webhook` } : {}),
+      },
+      requestOptions: { idempotencyKey: crypto.randomUUID() },
+    });
+    paymentId = payment.id ? String(payment.id) : null;
+  } catch (err) {
+    console.error("Erro ao gerar Pix no Mercado Pago", err);
+  }
+
+  if (!paymentId) redirect("/painel/assinatura?erro=mp_indisponivel");
+  redirect(`/painel/assinatura/pix/${paymentId}`);
 }

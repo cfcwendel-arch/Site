@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Check } from "lucide-react";
+import { Check, CreditCard, QrCode } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { formatBRL, cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { subscribeToPlanAction, cancelSubscriptionAction } from "./actions";
+import { subscribeToPlanAction, cancelSubscriptionAction, payWithPixAction } from "./actions";
 import { subscriptionErrorMessage } from "./error-messages";
 import { Badge } from "@/components/ui/badge";
 
@@ -41,6 +41,11 @@ export default async function AssinaturaPage({
       .maybeSingle(),
   ]);
 
+  const paidWithPix = subscription ? !subscription.mercadopago_preapproval_id : false;
+  const periodEnd = subscription?.current_period_end ? new Date(subscription.current_period_end) : null;
+  const expired = paidWithPix && subscription?.status === "active" && periodEnd !== null && periodEnd < new Date();
+  const periodEndLabel = periodEnd?.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
+
   return (
     <div className="max-w-4xl">
       <h1 className="text-2xl font-bold text-neutral-900">Assinatura</h1>
@@ -55,12 +60,25 @@ export default async function AssinaturaPage({
             <p className="font-semibold text-neutral-900">{subscription.plans?.name}</p>
             <p className="text-sm text-neutral-500">
               {formatBRL(subscription.plans?.price_cents ?? 0)}/mês
+              {paidWithPix ? " · pagamento via Pix" : " · cartão (renovação automática)"}
             </p>
+            {paidWithPix && periodEndLabel && subscription.status === "active" && (
+              <p className="mt-1 text-sm text-neutral-600">
+                {expired ? `Venceu em ${periodEndLabel}. Renove para continuar publicando.` : `Pago até ${periodEndLabel}.`}
+              </p>
+            )}
           </div>
-          <div className="flex items-center gap-3">
-            <Badge variant={subscription.status === "active" ? "default" : "warning"}>
-              {statusLabels[subscription.status] ?? subscription.status}
+          <div className="flex flex-wrap items-center gap-3">
+            <Badge variant={subscription.status === "active" && !expired ? "default" : "warning"}>
+              {expired ? "Vencida" : (statusLabels[subscription.status] ?? subscription.status)}
             </Badge>
+            {(paidWithPix || subscription.status === "pending") && (
+              <form action={payWithPixAction.bind(null, subscription.plan_id)}>
+                <Button type="submit" size="sm" className="gap-1.5">
+                  <QrCode /> {subscription.status === "active" && !expired ? "Renovar com Pix" : "Pagar com Pix"}
+                </Button>
+              </form>
+            )}
             {subscription.status !== "cancelled" && (
               <form action={cancelSubscriptionAction.bind(null, subscription.id)}>
                 <Button type="submit" variant="outline" size="sm">
@@ -75,7 +93,8 @@ export default async function AssinaturaPage({
       {!subscription && (
         <>
           <p className="mt-2 text-sm text-neutral-600">
-            Escolha um plano para começar a publicar seus anúncios.
+            Escolha um plano para começar a publicar seus anúncios. Pague com Pix (1 mês por
+            pagamento, liberação na hora) ou assine no cartão com renovação automática.
           </p>
           <div className="mt-6 grid gap-6 md:grid-cols-3">
             {(plans ?? []).map((plan, index) => {
@@ -103,11 +122,18 @@ export default async function AssinaturaPage({
                       </li>
                     ))}
                   </ul>
-                  <form action={subscribeToPlanAction.bind(null, plan.id)} className="mt-4">
-                    <Button type="submit" className="w-full" variant={highlighted ? "default" : "outline"}>
-                      Assinar plano
-                    </Button>
-                  </form>
+                  <div className="mt-4 space-y-2">
+                    <form action={payWithPixAction.bind(null, plan.id)}>
+                      <Button type="submit" className="w-full gap-2" variant={highlighted ? "default" : "outline"}>
+                        <QrCode /> Pagar com Pix
+                      </Button>
+                    </form>
+                    <form action={subscribeToPlanAction.bind(null, plan.id)}>
+                      <Button type="submit" className="w-full gap-2" variant="ghost">
+                        <CreditCard /> Assinar no cartão
+                      </Button>
+                    </form>
+                  </div>
                 </div>
               );
             })}

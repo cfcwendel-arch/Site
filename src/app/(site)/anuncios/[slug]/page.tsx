@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { LeadForm } from "@/components/site/lead-form";
 import { createClient } from "@/lib/supabase/server";
+import { AdBanner } from "@/components/site/ad-banner";
+import { getActiveAds } from "@/lib/ads";
 
 export async function generateMetadata({
   params,
@@ -36,6 +38,8 @@ export default async function ListingDetailPage({
 
   const supabase = await createClient();
   void supabase.rpc("increment_listing_views", { p_listing_id: listing.id });
+
+  const [sideAds, inlineAds] = await Promise.all([getActiveAds("listing_side"), getActiveAds("listing_inline")]);
 
   const images = [...listing.listing_images].sort((a, b) => a.position - b.position);
   const seller = listing.profiles;
@@ -73,6 +77,8 @@ export default async function ListingDetailPage({
               ))}
             </div>
           )}
+
+          {inlineAds[0] && <AdBanner ad={inlineAds[0]} variant="wide" className="mt-6" />}
 
           <div className="mt-8">
             <div className="flex flex-wrap items-center gap-2">
@@ -160,6 +166,14 @@ export default async function ListingDetailPage({
               </a>
             )}
           </div>
+
+          {sideAds.length > 0 && (
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-1">
+              {sideAds.map((ad) => (
+                <AdBanner key={ad.id} ad={ad} variant="side" />
+              ))}
+            </div>
+          )}
 
           <div className="rounded-lg border border-neutral-200 bg-white p-4">
             <h3 className="mb-3 font-semibold text-neutral-900">Enviar mensagem</h3>

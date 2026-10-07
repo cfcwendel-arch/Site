@@ -15,6 +15,7 @@ import {
   Users,
   Tag,
   Settings,
+  Megaphone,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -31,6 +32,7 @@ const iconMap = {
   users: Users,
   tag: Tag,
   settings: Settings,
+  megaphone: Megaphone,
 } satisfies Record<string, LucideIcon>;
 
 export type SidebarIconName = keyof typeof iconMap;

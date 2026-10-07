@@ -6,6 +6,7 @@ const links: SidebarLink[] = [
   { href: "/admin", label: "Visão geral", icon: "layout-dashboard" },
   { href: "/admin/anunciantes", label: "Anunciantes", icon: "users" },
   { href: "/admin/anuncios", label: "Anúncios", icon: "list-checks" },
+  { href: "/admin/publicidade", label: "Publicidade", icon: "megaphone" },
   { href: "/admin/planos", label: "Planos", icon: "credit-card" },
   { href: "/admin/categorias", label: "Categorias", icon: "tag" },
   { href: "/admin/configuracoes", label: "Configurações", icon: "settings" },

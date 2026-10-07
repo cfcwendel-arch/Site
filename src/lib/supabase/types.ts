@@ -12,6 +12,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      ads: {
+        Row: {
+          active: boolean
+          created_at: string
+          ends_at: string | null
+          id: string
+          image_path: string
+          link_url: string | null
+          placement: string
+          position: number
+          starts_at: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          image_path: string
+          link_url?: string | null
+          placement: string
+          position?: number
+          starts_at?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          image_path?: string
+          link_url?: string | null
+          placement?: string
+          position?: number
+          starts_at?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -404,6 +446,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_pix_payment: {
+        Args: {
+          p_subscription_id: string
+          p_payment_id: string
+          p_amount_cents: number
+          p_status: string
+          p_raw: Json
+        }
+        Returns: undefined
+      }
       increment_listing_views: {
         Args: { p_listing_id: string }
         Returns: undefined
