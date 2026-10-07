@@ -21,6 +21,11 @@ export default async function CadastroPage({
         </Link>
       </p>
 
+      <p className="mt-4 rounded-md border border-brand-gold/40 bg-brand-gold/10 p-3 text-sm text-neutral-800">
+        🎁 <strong>Primeiro mês de anúncio grátis.</strong> Crie sua conta, escolha o plano e comece a
+        anunciar sem pagar nada.
+      </p>
+
       <CadastroForm plano={params.plano} />
 
       <p className="mt-6 text-center text-xs text-neutral-500">

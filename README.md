@@ -95,6 +95,15 @@ Vencido o período (com 3 dias de tolerância), não dá pra publicar novos anú
 
 A conta do Mercado Pago precisa ter uma **chave Pix cadastrada** para gerar cobranças Pix.
 
+## Primeiro mês grátis e WhatsApp
+
+- Todo anunciante que nunca teve assinatura pode ativar **1 mês grátis** em qualquer plano
+  pelo `/painel/assinatura` (botão "Começar 1º mês grátis"). A regra "uma vez por conta"
+  é reforçada no banco (`start_free_trial`). Ao fim do mês, ele assina com Pix ou cartão.
+- O botão do **WhatsApp** no canto superior direito usa o telefone cadastrado em
+  **Admin → Configurações → Telefone de suporte** (DDD + número). Sem telefone, o botão
+  não aparece.
+
 ## Segurança
 
 - Row Level Security (RLS) ativado em **todas** as tabelas: anunciantes só enxergam e

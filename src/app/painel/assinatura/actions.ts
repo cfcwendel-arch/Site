@@ -16,6 +16,19 @@ export async function subscribeToPlanAction(planId: string): Promise<void> {
   const { data: plan } = await supabase.from("plans").select("*").eq("id", planId).eq("active", true).maybeSingle();
   if (!plan) redirect("/painel/assinatura?erro=plano_invalido");
 
+  // Quem está no mês grátis (ou pagou por Pix) e decide assinar no cartão: a assinatura
+  // atual, sem renovação automática, é encerrada e substituída pela recorrente.
+  const { data: current } = await supabase
+    .from("subscriptions")
+    .select("id")
+    .eq("advertiser_id", user.id)
+    .eq("status", "active")
+    .is("mercadopago_preapproval_id", null)
+    .maybeSingle();
+  if (current) {
+    await supabase.rpc("cancel_own_subscription", { p_subscription_id: current.id });
+  }
+
   const { data: subscriptionId, error: rpcError } = await supabase.rpc("create_pending_subscription", {
     p_plan_id: planId,
   });
@@ -63,6 +76,25 @@ export async function subscribeToPlanAction(planId: string): Promise<void> {
   }
 
   redirect(checkoutUrl!);
+}
+
+/** Primeiro mês grátis: só para quem nunca teve assinatura (regra reforçada no banco). */
+export async function startFreeTrialAction(planId: string): Promise<void> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/entrar?redirect=/painel/assinatura");
+
+  const { error } = await supabase.rpc("start_free_trial", { p_plan_id: planId });
+  if (error) {
+    if (error.message.includes("trial_not_eligible")) redirect("/painel/assinatura?erro=teste_usado");
+    if (error.message.includes("invalid_plan")) redirect("/painel/assinatura?erro=plano_invalido");
+    redirect("/painel/assinatura?erro=falha_iniciar");
+  }
+
+  revalidatePath("/painel", "layout");
+  redirect("/painel/assinatura?gratis=1");
 }
 
 export async function cancelSubscriptionAction(subscriptionId: string): Promise<void> {

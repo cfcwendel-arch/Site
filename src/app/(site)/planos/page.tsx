@@ -21,12 +21,18 @@ export default async function PlanosPage() {
         <span className="inline-flex items-center rounded-full bg-brand-gold/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand-gold-dark">
           0% de comissão sobre a venda
         </span>
+        <span className="ml-2 inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-green-800">
+          1º mês grátis
+        </span>
         <h1 className="mt-4 text-3xl font-bold text-neutral-900 sm:text-4xl">
           Anuncie sua máquina. Você define o valor, o comprador te encontra.
         </h1>
         <p className="mt-3 text-neutral-600">
           Assine um plano mensal e publique seus anúncios sem taxa sobre a venda: o negócio
           inteiro fica com você. Sem contrato de fidelidade, cancele quando quiser.
+        </p>
+        <p className="mt-3 font-semibold text-green-800">
+          O primeiro mês de anúncio é grátis em qualquer plano. Aproveite e cadastre-se agora!
         </p>
       </div>
 
