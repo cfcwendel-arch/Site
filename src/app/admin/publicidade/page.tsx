@@ -15,6 +15,8 @@ export default async function AdminPublicidadePage() {
     .order("position")
     .order("created_at", { ascending: false });
 
+  const now = new Date().getTime();
+
   return (
     <div className="max-w-4xl">
       <h1 className="text-2xl font-bold text-neutral-900">Publicidade</h1>
@@ -41,7 +43,7 @@ export default async function AdminPublicidadePage() {
                 </span>
               </div>
               <div className="mt-3">
-                <AdList ads={items} />
+                <AdList ads={items} now={now} />
               </div>
             </section>
           );

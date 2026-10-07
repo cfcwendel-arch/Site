@@ -15,7 +15,7 @@ function formatDate(value: string | null) {
   return value ? new Date(value).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }) : null;
 }
 
-export function AdList({ ads }: { ads: Tables<"ads">[] }) {
+export function AdList({ ads, now }: { ads: Tables<"ads">[]; now: number }) {
   const [isPending, startTransition] = useTransition();
 
   function run(action: () => Promise<void>, success: string) {
@@ -36,8 +36,6 @@ export function AdList({ ads }: { ads: Tables<"ads">[] }) {
       </p>
     );
   }
-
-  const now = Date.now();
 
   return (
     <ul className="divide-y divide-neutral-200 rounded-lg border border-neutral-200 bg-white">
