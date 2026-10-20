@@ -7,7 +7,7 @@ export type PaymentResponse = Awaited<ReturnType<Payment["get"]>>;
 
 /**
  * Pagamentos Pix de assinatura usam `external_reference = "pix:<subscription_id>"`.
- * O prefixo separa esses pagamentos avulsos das cobranças recorrentes do cartão
+ * O prefixo separa esses pagamentos das cobranças de assinaturas antigas no cartão
  * (que chegam pelo evento `subscription_authorized_payment`).
  */
 export const PIX_REFERENCE_PREFIX = "pix:";

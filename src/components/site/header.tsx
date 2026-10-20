@@ -13,13 +13,17 @@ const navLinks = [
   { href: "/contato", label: "Contato" },
 ];
 
+// WhatsApp do Wendel; o telefone de Admin → Configurações, quando preenchido, tem prioridade.
+const DEFAULT_SUPPORT_WHATSAPP = "6599827374";
+const WHATSAPP_MESSAGE = "Olá! Vim pelo site AgroNegocia.";
+
 async function getSupportWhatsapp() {
   try {
     const supabase = await createClient();
     const { data } = await supabase.from("site_settings").select("support_phone").maybeSingle();
-    return whatsappLink(data?.support_phone, "Olá! Vim pelo site AgroNegocia.");
+    return whatsappLink(data?.support_phone || DEFAULT_SUPPORT_WHATSAPP, WHATSAPP_MESSAGE);
   } catch {
-    return null;
+    return whatsappLink(DEFAULT_SUPPORT_WHATSAPP, WHATSAPP_MESSAGE);
   }
 }
 

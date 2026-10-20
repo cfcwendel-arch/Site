@@ -10,7 +10,7 @@ Desenvolvido por PMG Code.
 
 - [Next.js 16](https://nextjs.org) (App Router) + TypeScript + Tailwind CSS
 - [Supabase](https://supabase.com) — Postgres, Auth, Storage, Row Level Security
-- [Mercado Pago](https://www.mercadopago.com.br/developers) — assinaturas recorrentes (Preapproval)
+- [Mercado Pago](https://www.mercadopago.com.br/developers) — pagamento das assinaturas via Pix
 
 ## Configuração local
 
@@ -58,15 +58,16 @@ Qualquer outro e-mail cadastrado vira `advertiser` (anunciante) por padrão.
 2. Copie o **Access Token** de produção (ou teste) para `MERCADOPAGO_ACCESS_TOKEN`.
 3. Configure uma URL de Webhook apontando para:
    `https://SEU_DOMINIO/api/mercadopago/webhook`
-   — assinatura de eventos: `subscription_preapproval` e `subscription_authorized_payment`.
+   — evento: `payment` (Pagamentos). Os eventos de assinatura (`subscription_*`) só são
+   necessários para assinaturas antigas no cartão.
 4. Copie a "Assinatura secreta" (chave usada para validar a assinatura do webhook) para
    `MERCADOPAGO_WEBHOOK_SECRET`.
 5. Preencha `SUPABASE_SERVICE_ROLE_KEY` — o webhook usa esta chave (nunca exposta ao
    navegador) para ativar assinaturas e registrar pagamentos, contornando as políticas de
    RLS apenas nesse ponto controlado do servidor.
 
-Sem essas três variáveis preenchidas em produção, o fluxo de "Assinar plano" e a ativação
-automática de assinaturas não funcionam.
+Sem essas três variáveis preenchidas em produção, o pagamento via Pix e a ativação
+automática das assinaturas não funcionam.
 
 ## Publicidade (banners)
 
@@ -86,7 +87,7 @@ confundir com os anúncios dos clientes. Cada banner pode ter link e período de
 
 ## Pagamento via Pix
 
-Além da assinatura recorrente no cartão, o anunciante pode pagar com **Pix** em
+O **Pix é a única forma de pagamento** do site. O anunciante paga em
 `/painel/assinatura`: o site gera o QR Code / Pix Copia e Cola pelo Mercado Pago (mesmo
 `MERCADOPAGO_ACCESS_TOKEN`), e cada Pix aprovado libera **1 mês** do plano. A confirmação
 chega pelo mesmo webhook (`/api/mercadopago/webhook`, evento `payment`) e a tela do QR Code
@@ -99,10 +100,10 @@ A conta do Mercado Pago precisa ter uma **chave Pix cadastrada** para gerar cobr
 
 - Todo anunciante que nunca teve assinatura pode ativar **1 mês grátis** em qualquer plano
   pelo `/painel/assinatura` (botão "Começar 1º mês grátis"). A regra "uma vez por conta"
-  é reforçada no banco (`start_free_trial`). Ao fim do mês, ele assina com Pix ou cartão.
+  é reforçada no banco (`start_free_trial`). Ao fim do mês, ele paga o plano com Pix.
 - O botão do **WhatsApp** no canto superior direito usa o telefone cadastrado em
-  **Admin → Configurações → Telefone de suporte** (DDD + número). Sem telefone, o botão
-  não aparece.
+  **Admin → Configurações → Telefone de suporte** (DDD + número). Sem telefone cadastrado,
+  usa o padrão (65) 9982-7374, definido em `src/components/site/header.tsx`.
 
 ## Segurança
 

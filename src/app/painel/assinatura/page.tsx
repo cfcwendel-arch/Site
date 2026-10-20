@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Check, CreditCard, Gift, QrCode } from "lucide-react";
+import { Check, Gift, QrCode } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { formatBRL, cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { subscribeToPlanAction, cancelSubscriptionAction, payWithPixAction, startFreeTrialAction } from "./actions";
+import { cancelSubscriptionAction, payWithPixAction, startFreeTrialAction } from "./actions";
 import { subscriptionErrorMessage } from "./error-messages";
 import { Badge } from "@/components/ui/badge";
 
@@ -81,7 +81,7 @@ export default async function AssinaturaPage({
                 {subscription.is_trial
                   ? expired
                     ? `Seu mês grátis terminou em ${periodEndLabel}. Assine para continuar publicando.`
-                    : `Grátis até ${periodEndLabel}. Depois, é só assinar com Pix ou cartão.`
+                    : `Grátis até ${periodEndLabel}. Depois, é só pagar o plano com Pix.`
                   : expired
                     ? `Venceu em ${periodEndLabel}. Renove para continuar publicando.`
                     : `Pago até ${periodEndLabel}.`}
@@ -104,13 +104,6 @@ export default async function AssinaturaPage({
                 </Button>
               </form>
             )}
-            {subscription.is_trial && (
-              <form action={subscribeToPlanAction.bind(null, subscription.plan_id)}>
-                <Button type="submit" size="sm" variant="outline" className="gap-1.5">
-                  <CreditCard /> Assinar no cartão
-                </Button>
-              </form>
-            )}
             {subscription.status !== "cancelled" && (
               <form action={cancelSubscriptionAction.bind(null, subscription.id)}>
                 <Button type="submit" variant="outline" size="sm">
@@ -130,14 +123,14 @@ export default async function AssinaturaPage({
               <div>
                 <p className="font-semibold text-neutral-900">Seu primeiro mês de anúncio é grátis!</p>
                 <p className="text-sm text-neutral-700">
-                  Escolha o plano e comece a anunciar agora, sem pagar nada. Sem cartão e sem compromisso.
+                  Escolha o plano e comece a anunciar agora, sem pagar nada e sem compromisso.
                 </p>
               </div>
             </div>
           )}
           <p className="mt-4 text-sm text-neutral-600">
-            Escolha um plano para começar a publicar seus anúncios. Pague com Pix (1 mês por
-            pagamento, liberação na hora) ou assine no cartão com renovação automática.
+            Escolha um plano para começar a publicar seus anúncios. O pagamento é por Pix: cada
+            pagamento libera 1 mês, com liberação na hora. Para renovar, é só gerar um novo Pix.
           </p>
           <div className="mt-6 grid gap-6 md:grid-cols-3">
             {(plans ?? []).map((plan, index) => {
@@ -176,11 +169,6 @@ export default async function AssinaturaPage({
                     <form action={payWithPixAction.bind(null, plan.id)}>
                       <Button type="submit" className="w-full gap-2" variant={highlighted ? "default" : "outline"}>
                         <QrCode /> Pagar com Pix
-                      </Button>
-                    </form>
-                    <form action={subscribeToPlanAction.bind(null, plan.id)}>
-                      <Button type="submit" className="w-full gap-2" variant="ghost">
-                        <CreditCard /> Assinar no cartão
                       </Button>
                     </form>
                   </div>
