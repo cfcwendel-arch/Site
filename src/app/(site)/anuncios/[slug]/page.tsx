@@ -8,9 +8,17 @@ import { formatBRL } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { LeadForm } from "@/components/site/lead-form";
-import { createClient } from "@/lib/supabase/server";
+import { ListingViewTracker } from "@/components/site/listing-view-tracker";
 import { AdBanner } from "@/components/site/ad-banner";
 import { getActiveAds } from "@/lib/ads";
+
+// Servida pronta do cache, renovada a cada 60s (ou na hora, após edição/moderação).
+export const revalidate = 60;
+
+// Nenhuma página gerada no build: cada anúncio é gerado na primeira visita e fica em cache.
+export async function generateStaticParams() {
+  return [];
+}
 
 export async function generateMetadata({
   params,
@@ -36,8 +44,6 @@ export default async function ListingDetailPage({
 
   if (!listing) notFound();
 
-  const supabase = await createClient();
-  void supabase.rpc("increment_listing_views", { p_listing_id: listing.id });
 
   const [sideAds, inlineAds] = await Promise.all([getActiveAds("listing_side"), getActiveAds("listing_inline")]);
 
@@ -51,6 +57,7 @@ export default async function ListingDetailPage({
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <ListingViewTracker listingId={listing.id} />
       <div className="grid gap-10 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg bg-neutral-100">

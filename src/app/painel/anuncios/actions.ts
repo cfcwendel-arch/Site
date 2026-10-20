@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { refreshPublicSite } from "@/lib/public-cache";
 import { createClient } from "@/lib/supabase/server";
 import { listingSchema } from "@/lib/validations";
 import { slugify } from "@/lib/utils";
@@ -73,6 +74,7 @@ export async function createListingAction(_prev: ActionState, formData: FormData
   }
 
   revalidatePath("/painel/anuncios");
+  refreshPublicSite("listings");
   redirect(`/painel/anuncios/${listing.id}/editar?created=1`);
 }
 
@@ -107,6 +109,7 @@ export async function updateListingAction(
   if (error) return { error: "Não foi possível salvar as alterações." };
 
   revalidatePath("/painel/anuncios");
+  refreshPublicSite("listings");
   revalidatePath(`/painel/anuncios/${listingId}/editar`);
   return { success: true };
 }
@@ -115,12 +118,14 @@ export async function deleteListingAction(listingId: string) {
   const supabase = await createClient();
   await supabase.from("listings").delete().eq("id", listingId);
   revalidatePath("/painel/anuncios");
+  refreshPublicSite("listings");
 }
 
 export async function setListingStatusAction(listingId: string, status: "paused" | "approved" | "sold") {
   const supabase = await createClient();
   const { error } = await supabase.from("listings").update({ status }).eq("id", listingId);
   revalidatePath("/painel/anuncios");
+  refreshPublicSite("listings");
   if (error) throw new Error("Não foi possível atualizar o status do anúncio.");
 }
 
@@ -129,4 +134,5 @@ export async function deleteListingImageAction(imageId: string, path: string) {
   await supabase.storage.from("listing-images").remove([path]);
   await supabase.from("listing_images").delete().eq("id", imageId);
   revalidatePath("/painel/anuncios");
+  refreshPublicSite("listings");
 }

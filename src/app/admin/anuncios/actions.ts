@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { refreshPublicSite } from "@/lib/public-cache";
 import { createClient } from "@/lib/supabase/server";
 
 export async function approveListingAction(listingId: string) {
@@ -11,6 +12,7 @@ export async function approveListingAction(listingId: string) {
     .eq("id", listingId);
   if (error) throw new Error("Não foi possível aprovar o anúncio.");
   revalidatePath("/admin/anuncios");
+  refreshPublicSite("listings");
 }
 
 export async function rejectListingAction(listingId: string, reason: string) {
@@ -21,6 +23,7 @@ export async function rejectListingAction(listingId: string, reason: string) {
     .eq("id", listingId);
   if (error) throw new Error("Não foi possível recusar o anúncio.");
   revalidatePath("/admin/anuncios");
+  refreshPublicSite("listings");
 }
 
 export async function adminDeleteListingAction(listingId: string) {
@@ -28,4 +31,5 @@ export async function adminDeleteListingAction(listingId: string) {
   const { error } = await supabase.from("listings").delete().eq("id", listingId);
   if (error) throw new Error("Não foi possível excluir o anúncio.");
   revalidatePath("/admin/anuncios");
+  refreshPublicSite("listings");
 }

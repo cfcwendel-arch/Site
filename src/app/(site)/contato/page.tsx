@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { Mail, Phone } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { getPublicSettings } from "@/lib/site-data";
 
 export const metadata: Metadata = { title: "Contato" };
+export const revalidate = 300;
 
 export default async function ContatoPage() {
-  const supabase = await createClient();
-  const { data: settings } = await supabase.from("site_settings").select("*").single();
+  const settings = await getPublicSettings();
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-14 sm:px-6 lg:px-8">

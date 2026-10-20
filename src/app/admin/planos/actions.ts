@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { refreshPublicSite } from "@/lib/public-cache";
 import { createClient } from "@/lib/supabase/server";
 import { planSchema } from "@/lib/validations";
 import { slugify } from "@/lib/utils";
@@ -47,6 +48,7 @@ export async function createPlanAction(_prev: ActionState, formData: FormData): 
   if (error) return { error: "Não foi possível criar o plano." };
 
   revalidatePath("/admin/planos");
+  refreshPublicSite("plans");
   redirect("/admin/planos");
 }
 
@@ -71,6 +73,7 @@ export async function updatePlanAction(planId: string, _prev: ActionState, formD
   if (error) return { error: "Não foi possível salvar o plano." };
 
   revalidatePath("/admin/planos");
+  refreshPublicSite("plans");
   return { success: true };
 }
 
@@ -79,4 +82,5 @@ export async function deletePlanAction(planId: string) {
   const { error } = await supabase.from("plans").delete().eq("id", planId);
   if (error) throw new Error("Não foi possível excluir o plano (pode haver assinaturas vinculadas).");
   revalidatePath("/admin/planos");
+  refreshPublicSite("plans");
 }

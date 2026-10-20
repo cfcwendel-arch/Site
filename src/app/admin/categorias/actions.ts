@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { refreshPublicSite } from "@/lib/public-cache";
 import { createClient } from "@/lib/supabase/server";
 import { slugify } from "@/lib/utils";
 import type { ActionState } from "@/app/actions/auth";
@@ -16,6 +17,7 @@ export async function createCategoryAction(_prev: ActionState, formData: FormDat
   if (error) return { error: "Não foi possível criar a categoria." };
 
   revalidatePath("/admin/categorias");
+  refreshPublicSite("categories");
   return { success: true };
 }
 
@@ -24,4 +26,5 @@ export async function deleteCategoryAction(categoryId: string) {
   const { error } = await supabase.from("categories").delete().eq("id", categoryId);
   if (error) throw new Error("Não foi possível excluir (pode haver anúncios nesta categoria).");
   revalidatePath("/admin/categorias");
+  refreshPublicSite("categories");
 }

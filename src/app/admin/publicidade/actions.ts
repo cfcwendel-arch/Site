@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { refreshPublicSite } from "@/lib/public-cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { AD_PLACEMENT_KEYS } from "@/lib/ad-placements";
@@ -31,8 +32,7 @@ export type CreateAdInput = z.input<typeof adSchema>;
 
 function revalidateAdPages() {
   revalidatePath("/admin/publicidade");
-  revalidatePath("/");
-  revalidatePath("/anuncios", "layout");
+  refreshPublicSite("ads");
 }
 
 export async function createAdAction(input: CreateAdInput): Promise<{ error?: string }> {

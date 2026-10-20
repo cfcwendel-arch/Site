@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { refreshPublicSite } from "@/lib/public-cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
@@ -23,6 +24,7 @@ export async function setAdvertiserStatusAction(profileId: string, status: "acti
   const { error } = await supabase.from("profiles").update({ status }).eq("id", profileId);
   if (error) throw new Error("Não foi possível atualizar o anunciante.");
   revalidatePath("/admin/anunciantes");
+  refreshPublicSite("listings");
   revalidatePath(`/admin/anunciantes/${profileId}`);
 }
 
@@ -91,6 +93,7 @@ export async function createAdvertiserAction(_prev: ActionState, formData: FormD
     .eq("id", created.user.id);
 
   revalidatePath("/admin/anunciantes");
+  refreshPublicSite("listings");
   redirect(`/admin/anunciantes/${created.user.id}`);
 }
 
@@ -102,6 +105,7 @@ export async function deleteAdvertiserAction(profileId: string) {
   if (error) throw new Error("Não foi possível remover o anunciante.");
 
   revalidatePath("/admin/anunciantes");
+  refreshPublicSite("listings");
 }
 
 /**
