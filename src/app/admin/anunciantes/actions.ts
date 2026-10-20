@@ -103,3 +103,34 @@ export async function deleteAdvertiserAction(profileId: string) {
 
   revalidatePath("/admin/anunciantes");
 }
+
+/**
+ * Pix confirmado pelo admin (pagamento direto, combinado pelo WhatsApp): ativa a
+ * assinatura e libera 1 mês. Se ainda houver dias pagos, soma a partir do fim do período.
+ */
+export async function confirmPixPaymentAction(subscriptionId: string) {
+  await requireAdmin();
+  const supabase = await createClient();
+
+  const { data: subscription } = await supabase
+    .from("subscriptions")
+    .select("id, advertiser_id, status, current_period_end")
+    .eq("id", subscriptionId)
+    .in("status", ["pending", "active", "past_due"])
+    .maybeSingle();
+  if (!subscription) throw new Error("Assinatura não encontrada.");
+
+  const now = new Date();
+  const currentEnd = subscription.current_period_end ? new Date(subscription.current_period_end) : null;
+  const periodEnd = subscription.status === "active" && currentEnd && currentEnd > now ? currentEnd : now;
+  periodEnd.setMonth(periodEnd.getMonth() + 1);
+
+  const { error } = await supabase
+    .from("subscriptions")
+    .update({ status: "active", is_trial: false, current_period_end: periodEnd.toISOString() })
+    .eq("id", subscription.id);
+  if (error) throw new Error("Não foi possível confirmar o pagamento.");
+
+  revalidatePath("/admin");
+  revalidatePath(`/admin/anunciantes/${subscription.advertiser_id}`);
+}

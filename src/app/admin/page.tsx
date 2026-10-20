@@ -10,11 +10,17 @@ export const metadata: Metadata = { title: "Painel admin" };
 export default async function AdminOverviewPage() {
   const supabase = await createClient();
 
-  const [advertisersCount, pendingListingsCount, activeSubs, settings] = await Promise.all([
+  const [advertisersCount, pendingListingsCount, activeSubs, settings, pendingPix] = await Promise.all([
     supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "advertiser"),
     supabase.from("listings").select("id", { count: "exact", head: true }).eq("status", "pending_review"),
     supabase.from("subscriptions").select("*, plans(price_cents)").eq("status", "active"),
     supabase.from("site_settings").select("commission_percent").single(),
+    supabase
+      .from("subscriptions")
+      .select("id, advertiser_id, created_at, plans(name, price_cents), profiles(full_name, company_name, email)")
+      .eq("status", "pending")
+      .is("mercadopago_preapproval_id", null)
+      .order("created_at", { ascending: false }),
   ]);
 
   const mrr = (activeSubs.data ?? []).reduce((sum, s) => sum + (s.plans?.price_cents ?? 0), 0);
@@ -48,6 +54,37 @@ export default async function AdminOverviewPage() {
           </CardContent>
         </Card>
       </div>
+
+      {(pendingPix.data?.length ?? 0) > 0 && (
+        <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
+          <h2 className="font-semibold text-neutral-900">
+            Pix aguardando confirmação ({pendingPix.data!.length})
+          </h2>
+          <p className="mt-1 text-sm text-neutral-600">
+            Anunciantes que pediram para pagar via Pix pelo WhatsApp. Depois de receber, abra o
+            anunciante e clique em “Confirmar Pix recebido”.
+          </p>
+          <ul className="mt-3 divide-y divide-amber-200 text-sm">
+            {pendingPix.data!.map((sub) => (
+              <li key={sub.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                <span>
+                  <span className="font-medium text-neutral-900">
+                    {sub.profiles?.company_name || sub.profiles?.full_name || sub.profiles?.email}
+                  </span>{" "}
+                  · {sub.plans?.name} ({formatBRL(sub.plans?.price_cents ?? 0)}) · pedido em{" "}
+                  {new Date(sub.created_at).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })}
+                </span>
+                <Link
+                  href={`/admin/anunciantes/${sub.advertiser_id}`}
+                  className="font-medium text-green-700 hover:underline"
+                >
+                  Abrir anunciante
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="mt-6 rounded-lg border border-neutral-200 bg-white p-4 text-sm text-neutral-600">
         Comissão configurada sobre o GMV (referência, não cobrada automaticamente): {settings.data?.commission_percent ?? 0}%
