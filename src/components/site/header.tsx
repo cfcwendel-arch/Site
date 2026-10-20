@@ -1,11 +1,10 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
 import { Logo } from "@/components/site/logo";
-import { buttonVariants } from "@/components/ui/button";
 import { HeaderMobileMenu } from "@/components/site/header-mobile-menu";
 import { WhatsAppIcon } from "@/components/site/whatsapp-icon";
+import { AuthStateProvider } from "@/components/site/auth-state";
+import { HeaderAuthButtons, PromoBar } from "@/components/site/header-auth";
 import { getSupportWhatsappLink } from "@/lib/support-whatsapp";
-import { Gift } from "lucide-react";
 
 const navLinks = [
   { href: "/anuncios", label: "Anúncios" },
@@ -14,43 +13,10 @@ const navLinks = [
   { href: "/contato", label: "Contato" },
 ];
 
-async function getHeaderAuthState() {
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    let role: string | null = null;
-    if (user) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single();
-      role = profile?.role ?? null;
-    }
-
-    return { user, role };
-  } catch (err) {
-    // Never swallow Next.js's own internal control-flow signals (redirect(),
-    // notFound(), the DYNAMIC_SERVER_USAGE bailout during static generation) —
-    // only degrade gracefully on a genuine Supabase/network failure.
-    const digest = (err as { digest?: string } | null)?.digest;
-    if (typeof digest === "string" && (digest.startsWith("NEXT_") || digest === "DYNAMIC_SERVER_USAGE")) {
-      throw err;
-    }
-    console.error("Erro ao carregar sessão no cabeçalho", err);
-    return { user: null, role: null };
-  }
-}
-
+// O cabeçalho não lê cookies no servidor: o login é resolvido no navegador
+// (AuthStateProvider), então as páginas públicas podem sair prontas do cache.
 export async function SiteHeader() {
-  const [{ user, role }, whatsappHref] = await Promise.all([
-    getHeaderAuthState(),
-    getSupportWhatsappLink("Olá! Vim pelo site AgroNegocia."),
-  ]);
-  const dashboardHref = role === "admin" ? "/admin" : "/painel";
+  const whatsappHref = await getSupportWhatsappLink("Olá! Vim pelo site AgroNegocia.");
 
   const whatsappButton = whatsappHref && (
     <a
@@ -66,19 +32,8 @@ export async function SiteHeader() {
   );
 
   return (
-    <>
-      {!user && (
-        <Link
-          href="/cadastro"
-          className="flex items-center justify-center gap-2 bg-brand-gold px-4 py-2 text-center text-sm font-semibold text-white hover:bg-brand-gold-dark"
-        >
-          <Gift className="h-4 w-4 shrink-0" />
-          <span>
-            Primeiro mês de anúncio grátis!{" "}
-            <span className="underline underline-offset-2">Aproveite e cadastre-se agora</span>
-          </span>
-        </Link>
-      )}
+    <AuthStateProvider>
+      <PromoBar />
       <header className="sticky top-0 z-40 border-b border-neutral-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Logo />
@@ -97,28 +52,15 @@ export async function SiteHeader() {
 
           <div className="hidden items-center gap-3 md:flex">
             {whatsappButton}
-            {user ? (
-              <Link href={dashboardHref} className={buttonVariants()}>
-                Meu painel
-              </Link>
-            ) : (
-              <>
-                <Link href="/entrar" className="text-sm font-medium text-neutral-700 hover:text-green-700">
-                  Entrar
-                </Link>
-                <Link href="/cadastro" className={buttonVariants()}>
-                  Anunciar
-                </Link>
-              </>
-            )}
+            <HeaderAuthButtons />
           </div>
 
           <div className="flex items-center gap-2 md:hidden">
             {whatsappButton}
-            <HeaderMobileMenu navLinks={navLinks} isAuthenticated={!!user} dashboardHref={dashboardHref} />
+            <HeaderMobileMenu navLinks={navLinks} />
           </div>
         </div>
       </header>
-    </>
+    </AuthStateProvider>
   );
 }

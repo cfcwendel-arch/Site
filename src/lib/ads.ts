@@ -1,12 +1,14 @@
-import { createClient } from "@/lib/supabase/server";
+import { unstable_cache } from "next/cache";
+import { createPublicClient } from "@/lib/supabase/public";
+import { PUBLIC_TAGS } from "@/lib/public-cache";
 import { AD_PLACEMENTS, type Ad, type AdPlacement } from "@/lib/ad-placements";
 
 export * from "@/lib/ad-placements";
 
 /** Banners ativos (e dentro do período de veiculação) de um espaço, na ordem definida pelo admin. */
-export async function getActiveAds(placement: AdPlacement): Promise<Ad[]> {
+async function fetchActiveAds(placement: AdPlacement): Promise<Ad[]> {
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const now = new Date().toISOString();
     const { data } = await supabase
       .from("ads")
@@ -24,3 +26,8 @@ export async function getActiveAds(placement: AdPlacement): Promise<Ad[]> {
     return [];
   }
 }
+
+export const getActiveAds = unstable_cache(fetchActiveAds, ["active-ads"], {
+  tags: [PUBLIC_TAGS.ads],
+  revalidate: 60,
+});

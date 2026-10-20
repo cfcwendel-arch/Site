@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { refreshPublicSite } from "@/lib/public-cache";
 import { createClient } from "@/lib/supabase/server";
 import type { ActionState } from "@/app/actions/auth";
 
@@ -27,5 +28,6 @@ export async function updateSiteSettingsAction(_prev: ActionState, formData: For
 
   revalidatePath("/admin/configuracoes");
   revalidatePath("/contato");
+  refreshPublicSite("settings");
   return { success: true };
 }

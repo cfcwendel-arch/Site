@@ -1,19 +1,15 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Check } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { getActivePlans } from "@/lib/site-data";
 import { formatBRL, cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
 export const metadata: Metadata = { title: "Planos para anunciantes" };
+export const revalidate = 300;
 
 export default async function PlanosPage() {
-  const supabase = await createClient();
-  const { data: plans } = await supabase
-    .from("plans")
-    .select("*")
-    .eq("active", true)
-    .order("position");
+  const plans = await getActivePlans();
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">

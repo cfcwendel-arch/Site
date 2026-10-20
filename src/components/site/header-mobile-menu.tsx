@@ -4,17 +4,11 @@ import { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import { useAuthState } from "@/components/site/auth-state";
 
-export function HeaderMobileMenu({
-  navLinks,
-  isAuthenticated,
-  dashboardHref,
-}: {
-  navLinks: { href: string; label: string }[];
-  isAuthenticated: boolean;
-  dashboardHref: string;
-}) {
+export function HeaderMobileMenu({ navLinks }: { navLinks: { href: string; label: string }[] }) {
   const [open, setOpen] = useState(false);
+  const { loggedIn: isAuthenticated, dashboardHref } = useAuthState();
 
   return (
     <div className="md:hidden">

@@ -1,4 +1,6 @@
-import { createClient } from "@/lib/supabase/server";
+import { unstable_cache } from "next/cache";
+import { createPublicClient } from "@/lib/supabase/public";
+import { PUBLIC_TAGS } from "@/lib/public-cache";
 
 export type ListingFilters = {
   q?: string;
@@ -12,14 +14,14 @@ export type ListingFilters = {
 
 const PAGE_SIZE = 12;
 
-export async function getCategories() {
-  const supabase = await createClient();
+async function fetchCategories() {
+  const supabase = createPublicClient();
   const { data } = await supabase.from("categories").select("*").order("position");
   return data ?? [];
 }
 
-export async function getApprovedListings(filters: ListingFilters = {}) {
-  const supabase = await createClient();
+async function fetchApprovedListings(filters: ListingFilters = {}) {
+  const supabase = createPublicClient();
   const page = filters.page ?? 1;
   const from = (page - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
@@ -48,8 +50,8 @@ export async function getApprovedListings(filters: ListingFilters = {}) {
   return { listings: data ?? [], total: count ?? 0, page, pageSize: PAGE_SIZE };
 }
 
-export async function getFeaturedListings(limit = 8) {
-  const supabase = await createClient();
+async function fetchFeaturedListings(limit = 8) {
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("listings")
     .select("*, categories(name, slug), listing_images(path, position)")
@@ -59,8 +61,8 @@ export async function getFeaturedListings(limit = 8) {
   return data ?? [];
 }
 
-export async function getListingBySlug(slug: string) {
-  const supabase = await createClient();
+async function fetchListingBySlug(slug: string) {
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("listings")
     .select(
@@ -70,3 +72,26 @@ export async function getListingBySlug(slug: string) {
     .maybeSingle();
   return data;
 }
+
+// Dados públicos em cache: as páginas não consultam o banco a cada visita. Mudanças feitas
+// pelo admin/anunciante limpam o cache na hora (refreshPublicSite); fora isso, renova a
+// cada 60s.
+export const getCategories = unstable_cache(fetchCategories, ["categories"], {
+  tags: [PUBLIC_TAGS.categories],
+  revalidate: 300,
+});
+
+export const getApprovedListings = unstable_cache(fetchApprovedListings, ["approved-listings"], {
+  tags: [PUBLIC_TAGS.listings, PUBLIC_TAGS.categories],
+  revalidate: 60,
+});
+
+export const getFeaturedListings = unstable_cache(fetchFeaturedListings, ["featured-listings"], {
+  tags: [PUBLIC_TAGS.listings],
+  revalidate: 60,
+});
+
+export const getListingBySlug = unstable_cache(fetchListingBySlug, ["listing-by-slug"], {
+  tags: [PUBLIC_TAGS.listings],
+  revalidate: 60,
+});
