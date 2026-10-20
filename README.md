@@ -10,7 +10,7 @@ Desenvolvido por PMG Code.
 
 - [Next.js 16](https://nextjs.org) (App Router) + TypeScript + Tailwind CSS
 - [Supabase](https://supabase.com) — Postgres, Auth, Storage, Row Level Security
-- [Mercado Pago](https://www.mercadopago.com.br/developers) — pagamento das assinaturas via Pix
+- Pagamento das assinaturas via Pix direto, combinado pelo WhatsApp (sem gateway)
 
 ## Configuração local
 
@@ -52,7 +52,10 @@ Não existe senha de admin "hardcoded" por segurança. Para acessar o `/admin`:
 
 Qualquer outro e-mail cadastrado vira `advertiser` (anunciante) por padrão.
 
-## Configurando o Mercado Pago (assinaturas)
+## Mercado Pago (só para assinaturas antigas no cartão)
+
+O site não usa mais o Mercado Pago para novos pagamentos. As variáveis abaixo só são
+necessárias se ainda existir alguma assinatura antiga no cartão.
 
 1. Crie uma aplicação em https://www.mercadopago.com.br/developers/panel.
 2. Copie o **Access Token** de produção (ou teste) para `MERCADOPAGO_ACCESS_TOKEN`.
@@ -85,16 +88,20 @@ Todo banner aparece com a etiqueta **“Publicidade”** e borda própria, para 
 confundir com os anúncios dos clientes. Cada banner pode ter link e período de veiculação
 (início/fim); fora do período ele some sozinho. As imagens ficam no bucket `ad-images`.
 
-## Pagamento via Pix
+## Pagamento via Pix (direto, pelo WhatsApp)
 
-O **Pix é a única forma de pagamento** do site. O anunciante paga em
-`/painel/assinatura`: o site gera o QR Code / Pix Copia e Cola pelo Mercado Pago (mesmo
-`MERCADOPAGO_ACCESS_TOKEN`), e cada Pix aprovado libera **1 mês** do plano. A confirmação
-chega pelo mesmo webhook (`/api/mercadopago/webhook`, evento `payment`) e a tela do QR Code
-também confere o status sozinha. Para renovar, o anunciante gera um novo Pix na mesma tela.
+O **Pix é a única forma de pagamento** e é feito direto com a AgroNegocia, sem gateway:
+
+1. Em `/painel/assinatura`, o anunciante escolhe o plano e clica em **Pagar com Pix**.
+2. O site registra o pedido (assinatura pendente) e abre o WhatsApp do Wendel com a
+   mensagem pronta (plano, valor, nome e e-mail do cadastro).
+3. O Wendel passa a chave Pix e, ao receber, entra em **Admin → Anunciantes → (anunciante)**
+   e clica em **Confirmar Pix recebido (+1 mês)**. Pedidos pendentes também aparecem na
+   visão geral do admin.
+4. Para renovar, o anunciante clica em **Renovar com Pix** e o processo se repete; o mês
+   novo soma a partir do fim do período ainda pago.
+
 Vencido o período (com 3 dias de tolerância), não dá pra publicar novos anúncios até renovar.
-
-A conta do Mercado Pago precisa ter uma **chave Pix cadastrada** para gerar cobranças Pix.
 
 ## Primeiro mês grátis e WhatsApp
 

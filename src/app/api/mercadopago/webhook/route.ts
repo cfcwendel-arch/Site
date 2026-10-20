@@ -1,8 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyMercadoPagoSignature } from "@/lib/mercadopago-webhook";
-import { getPaymentClient, getPreApprovalClient } from "@/lib/mercadopago";
-import { pixSubscriptionId, syncPixPayment } from "@/lib/pix";
+import { getPreApprovalClient } from "@/lib/mercadopago";
 
 export async function POST(request: NextRequest) {
   const secret = process.env.MERCADOPAGO_WEBHOOK_SECRET;
@@ -34,12 +33,9 @@ export async function POST(request: NextRequest) {
   const supabase = createAdminClient();
 
   try {
-    if (type === "payment") {
-      // Pagamentos avulsos via Pix. Os dados são relidos na API do Mercado Pago — nunca
-      // confiamos no corpo da notificação.
-      const payment = await getPaymentClient().get({ id: dataId });
-      if (pixSubscriptionId(payment)) await syncPixPayment(payment);
-    } else if (type === "subscription_preapproval") {
+    // Só assinaturas antigas no cartão. Hoje o pagamento é por Pix direto, confirmado
+    // manualmente pelo admin.
+    if (type === "subscription_preapproval") {
       const preApproval = await getPreApprovalClient().get({ id: dataId });
       const subscriptionId = preApproval.external_reference;
       if (!subscriptionId) return NextResponse.json({ ok: true });

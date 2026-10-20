@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 export const metadata: Metadata = { title: "Assinatura" };
 
 const statusLabels: Record<string, string> = {
-  pending: "Aguardando pagamento",
+  pending: "Aguardando confirmação do Pix",
   active: "Ativa",
   paused: "Pausada",
   cancelled: "Cancelada",
@@ -76,6 +76,12 @@ export default async function AssinaturaPage({
                   ? " · pagamento via Pix"
                   : " · cartão (renovação automática)"}
             </p>
+            {subscription.status === "pending" && paidWithPix && (
+              <p className="mt-1 text-sm text-neutral-600">
+                Pedido registrado. Combine o Pix pelo WhatsApp; assim que o pagamento for confirmado,
+                seu plano é liberado.
+              </p>
+            )}
             {paidWithPix && periodEndLabel && subscription.status === "active" && (
               <p className="mt-1 text-sm text-neutral-600">
                 {subscription.is_trial
@@ -96,11 +102,13 @@ export default async function AssinaturaPage({
               <form action={payWithPixAction.bind(null, subscription.plan_id)}>
                 <Button type="submit" size="sm" className="gap-1.5">
                   <QrCode />{" "}
-                  {subscription.is_trial
-                    ? "Assinar com Pix"
-                    : subscription.status === "active" && !expired
-                      ? "Renovar com Pix"
-                      : "Pagar com Pix"}
+                  {subscription.status === "pending"
+                    ? "Falar no WhatsApp para pagar"
+                    : subscription.is_trial
+                      ? "Assinar com Pix"
+                      : !expired
+                        ? "Renovar com Pix"
+                        : "Pagar com Pix"}
                 </Button>
               </form>
             )}
@@ -129,8 +137,9 @@ export default async function AssinaturaPage({
             </div>
           )}
           <p className="mt-4 text-sm text-neutral-600">
-            Escolha um plano para começar a publicar seus anúncios. O pagamento é por Pix: cada
-            pagamento libera 1 mês, com liberação na hora. Para renovar, é só gerar um novo Pix.
+            Escolha um plano para começar a publicar seus anúncios. O pagamento é por Pix: ao clicar
+            em “Pagar com Pix”, você fala direto com a AgroNegocia no WhatsApp, recebe a chave Pix
+            e, após a confirmação, seu plano fica liberado por 1 mês.
           </p>
           <div className="mt-6 grid gap-6 md:grid-cols-3">
             {(plans ?? []).map((plan, index) => {

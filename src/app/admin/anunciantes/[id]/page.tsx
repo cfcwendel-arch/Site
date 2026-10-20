@@ -5,8 +5,17 @@ import { Badge } from "@/components/ui/badge";
 import { formatBRL } from "@/lib/utils";
 import { AdvertiserStatusToggle } from "@/components/admin/advertiser-status-toggle";
 import { AdvertiserDeleteButton } from "@/components/admin/advertiser-delete-button";
+import { ConfirmPixButton } from "@/components/admin/confirm-pix-button";
 
 export const metadata: Metadata = { title: "Detalhes do anunciante" };
+
+const subscriptionStatusLabels: Record<string, string> = {
+  pending: "Aguardando Pix",
+  active: "Ativa",
+  paused: "Pausada",
+  cancelled: "Cancelada",
+  past_due: "Pagamento pendente",
+};
 
 const listingStatusLabels: Record<string, string> = {
   pending_review: "Em análise",
@@ -66,12 +75,31 @@ export default async function AdvertiserDetailPage({ params }: { params: Promise
             <p className="mt-2 text-neutral-500">Nenhuma assinatura.</p>
           ) : (
             <ul className="mt-2 space-y-2">
-              {subscriptions!.map((sub) => (
-                <li key={sub.id} className="flex items-center justify-between">
-                  <span>{sub.plans?.name} — {formatBRL(sub.plans?.price_cents ?? 0)}/mês</span>
-                  <Badge variant={sub.status === "active" ? "default" : "secondary"}>{sub.status}</Badge>
-                </li>
-              ))}
+              {subscriptions!.map((sub) => {
+                const planLabel = `${sub.plans?.name} — ${formatBRL(sub.plans?.price_cents ?? 0)}/mês`;
+                const canConfirmPix =
+                  !sub.mercadopago_preapproval_id && ["pending", "active", "past_due"].includes(sub.status);
+                return (
+                  <li key={sub.id} className="space-y-1.5 border-b border-neutral-100 pb-2 last:border-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <span>
+                        {planLabel}
+                        {sub.is_trial && " · mês grátis"}
+                      </span>
+                      <Badge variant={sub.status === "active" ? "default" : "secondary"}>
+                        {subscriptionStatusLabels[sub.status] ?? sub.status}
+                      </Badge>
+                    </div>
+                    {sub.current_period_end && sub.status === "active" && (
+                      <p className="text-xs text-neutral-500">
+                        Liberado até{" "}
+                        {new Date(sub.current_period_end).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })}
+                      </p>
+                    )}
+                    {canConfirmPix && <ConfirmPixButton subscriptionId={sub.id} planLabel={planLabel} />}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>

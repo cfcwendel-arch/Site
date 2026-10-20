@@ -3,7 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { Logo } from "@/components/site/logo";
 import { buttonVariants } from "@/components/ui/button";
 import { HeaderMobileMenu } from "@/components/site/header-mobile-menu";
-import { WhatsAppIcon, whatsappLink } from "@/components/site/whatsapp-icon";
+import { WhatsAppIcon } from "@/components/site/whatsapp-icon";
+import { getSupportWhatsappLink } from "@/lib/support-whatsapp";
 import { Gift } from "lucide-react";
 
 const navLinks = [
@@ -12,20 +13,6 @@ const navLinks = [
   { href: "/sobre", label: "Sobre" },
   { href: "/contato", label: "Contato" },
 ];
-
-// WhatsApp do Wendel; o telefone de Admin → Configurações, quando preenchido, tem prioridade.
-const DEFAULT_SUPPORT_WHATSAPP = "6599827374";
-const WHATSAPP_MESSAGE = "Olá! Vim pelo site AgroNegocia.";
-
-async function getSupportWhatsapp() {
-  try {
-    const supabase = await createClient();
-    const { data } = await supabase.from("site_settings").select("support_phone").maybeSingle();
-    return whatsappLink(data?.support_phone || DEFAULT_SUPPORT_WHATSAPP, WHATSAPP_MESSAGE);
-  } catch {
-    return whatsappLink(DEFAULT_SUPPORT_WHATSAPP, WHATSAPP_MESSAGE);
-  }
-}
 
 async function getHeaderAuthState() {
   try {
@@ -59,7 +46,10 @@ async function getHeaderAuthState() {
 }
 
 export async function SiteHeader() {
-  const [{ user, role }, whatsappHref] = await Promise.all([getHeaderAuthState(), getSupportWhatsapp()]);
+  const [{ user, role }, whatsappHref] = await Promise.all([
+    getHeaderAuthState(),
+    getSupportWhatsappLink("Olá! Vim pelo site AgroNegocia."),
+  ]);
   const dashboardHref = role === "admin" ? "/admin" : "/painel";
 
   const whatsappButton = whatsappHref && (

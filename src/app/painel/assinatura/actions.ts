@@ -3,8 +3,9 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getPaymentClient, getPreApprovalClient } from "@/lib/mercadopago";
-import { PIX_REFERENCE_PREFIX, pixExpirationDate } from "@/lib/pix";
+import { getPreApprovalClient } from "@/lib/mercadopago";
+import { getSupportWhatsappLink } from "@/lib/support-whatsapp";
+import { formatBRL } from "@/lib/utils";
 
 /** Primeiro mês grátis: só para quem nunca teve assinatura (regra reforçada no banco). */
 export async function startFreeTrialAction(planId: string): Promise<void> {
@@ -49,12 +50,11 @@ export async function cancelSubscriptionAction(subscriptionId: string): Promise<
 }
 
 /**
- * Gera um QR Code Pix para pagar 1 mês do plano. O Pix é a única forma de pagamento do
- * site e não é recorrente: quando o período pago termina, o anunciante gera um novo Pix
- * pela mesma tela para renovar.
+ * Pagamento via Pix direto com a AgroNegocia (sem Mercado Pago): registra o pedido como
+ * assinatura pendente e leva o anunciante ao WhatsApp do Wendel com a mensagem pronta.
+ * Depois de receber o Pix, o admin confirma em Admin → Anunciantes, o que libera 1 mês.
  * - Sem assinatura: cria uma pendente para o plano escolhido.
- * - Assinatura já paga por Pix (pendente, ativa ou vencida): paga/renova a mesma.
- * - Assinatura antiga no cartão ainda pendente: descarta e começa pelo Pix.
+ * - Já tem assinatura paga por Pix ou mês grátis (pendente, ativa ou vencida): renova a mesma.
  */
 export async function payWithPixAction(planId: string): Promise<void> {
   const supabase = await createClient();
@@ -72,13 +72,13 @@ export async function payWithPixAction(planId: string): Promise<void> {
     .limit(1)
     .maybeSingle();
 
-  let subscriptionId: string | null = null;
+  let subscriptionId: string;
 
   if (existing && !existing.mercadopago_preapproval_id) {
     subscriptionId = existing.id;
   } else {
     if (existing?.mercadopago_preapproval_id) {
-      // Assinatura no cartão já ativa renova sozinha — não faz sentido pagar Pix por cima.
+      // Assinatura antiga no cartão: ativa renova sozinha; pendente é descartada.
       if (existing.status !== "pending") redirect("/painel/assinatura?erro=cartao_ativo");
       await supabase.rpc("cancel_own_subscription", { p_subscription_id: existing.id });
     }
@@ -95,36 +95,23 @@ export async function payWithPixAction(planId: string): Promise<void> {
     subscriptionId = createdId;
   }
 
-  const { data: subscription } = await supabase
-    .from("subscriptions")
-    .select("id, plans(name, price_cents)")
-    .eq("id", subscriptionId)
-    .maybeSingle();
+  const [{ data: subscription }, { data: profile }] = await Promise.all([
+    supabase.from("subscriptions").select("plans(name, price_cents)").eq("id", subscriptionId).maybeSingle(),
+    supabase.from("profiles").select("full_name, company_name").eq("id", user.id).maybeSingle(),
+  ]);
   const plan = subscription?.plans;
-  if (!plan || plan.price_cents <= 0) redirect("/painel/assinatura?erro=plano_invalido");
+  if (!plan) redirect("/painel/assinatura?erro=plano_invalido");
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-  let paymentId: string | null = null;
+  const name = profile?.company_name || profile?.full_name;
+  const message = [
+    `Olá! Quero pagar via Pix o plano ${plan.name} (${formatBRL(plan.price_cents)}/mês) no AgroNegocia.`,
+    name ? `Nome: ${name}` : null,
+    `E-mail do cadastro: ${user.email}`,
+  ]
+    .filter(Boolean)
+    .join("\n");
 
-  try {
-    const payment = await getPaymentClient().create({
-      body: {
-        transaction_amount: plan.price_cents / 100,
-        description: `AgroNegocia - Plano ${plan.name} (1 mês)`,
-        payment_method_id: "pix",
-        payer: { email: user.email! },
-        external_reference: `${PIX_REFERENCE_PREFIX}${subscriptionId}`,
-        date_of_expiration: pixExpirationDate(),
-        // O Mercado Pago só aceita URL pública https para notificações.
-        ...(siteUrl.startsWith("https://") ? { notification_url: `${siteUrl}/api/mercadopago/webhook` } : {}),
-      },
-      requestOptions: { idempotencyKey: crypto.randomUUID() },
-    });
-    paymentId = payment.id ? String(payment.id) : null;
-  } catch (err) {
-    console.error("Erro ao gerar Pix no Mercado Pago", err);
-  }
-
-  if (!paymentId) redirect("/painel/assinatura?erro=mp_indisponivel");
-  redirect(`/painel/assinatura/pix/${paymentId}`);
+  const link = await getSupportWhatsappLink(message);
+  revalidatePath("/painel/assinatura");
+  redirect(link ?? "/contato");
 }
