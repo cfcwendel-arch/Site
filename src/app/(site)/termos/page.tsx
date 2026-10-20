@@ -15,8 +15,9 @@ export default function TermosPage() {
           veracidade dos itens anunciados.
         </p>
         <p>
-          Para publicar anúncios, o anunciante deve assinar um dos planos disponíveis. A cobrança
-          é recorrente (mensal) e processada via Mercado Pago. O acesso à publicação de anúncios
+          Para publicar anúncios, o anunciante deve assinar um dos planos disponíveis. O pagamento
+          é mensal, feito via Pix e processado pelo Mercado Pago; cada pagamento libera 1 mês de
+          publicação e a renovação é feita pelo próprio anunciante. O acesso à publicação de anúncios
           fica condicionado ao pagamento em dia da assinatura.
         </p>
         <p>
