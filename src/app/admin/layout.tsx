@@ -5,6 +5,7 @@ import { DashboardSidebar, type SidebarLink } from "@/components/dashboard/sideb
 const links: SidebarLink[] = [
   { href: "/admin", label: "Visão geral", icon: "layout-dashboard" },
   { href: "/admin/anunciantes", label: "Anunciantes", icon: "users" },
+  { href: "/admin/anuncios/novo", label: "Novo anúncio", icon: "plus-circle" },
   { href: "/admin/anuncios", label: "Anúncios", icon: "list-checks" },
   { href: "/admin/publicidade", label: "Publicidade", icon: "megaphone" },
   { href: "/admin/planos", label: "Planos", icon: "credit-card" },

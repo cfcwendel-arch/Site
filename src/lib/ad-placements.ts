@@ -26,5 +26,6 @@ export type Ad = {
 };
 
 export function adImageUrl(path: string) {
+  if (path.startsWith("/")) return path;
   return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/ad-images/${path}`;
 }

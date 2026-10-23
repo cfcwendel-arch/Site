@@ -46,6 +46,11 @@ export function DashboardSidebar({
   title: string;
 }) {
   const pathname = usePathname();
+  // Marca só o item mais específico que corresponde à página atual.
+  const activeHref = links
+    .map((l) => l.href)
+    .filter((href) => pathname === href || pathname.startsWith(`${href}/`))
+    .sort((a, b) => b.length - a.length)[0];
 
   return (
     <aside className="flex w-64 shrink-0 flex-col border-r border-neutral-200 bg-white">
@@ -55,7 +60,7 @@ export function DashboardSidebar({
       </div>
       <nav className="flex-1 space-y-1 p-3">
         {links.map((link) => {
-          const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
+          const active = link.href === activeHref;
           const Icon = iconMap[link.icon];
           return (
             <Link

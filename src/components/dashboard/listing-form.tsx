@@ -36,8 +36,11 @@ export function ListingForm({
   categories,
   defaults,
   submitLabel,
+  children,
 }: {
   action: (state: ActionState, formData: FormData) => Promise<ActionState>;
+  /** Campos extras no topo do formulário (ex.: escolha do anunciante, no admin). */
+  children?: React.ReactNode;
   categories: Category[];
   defaults?: ListingFormDefaults;
   submitLabel: string;
@@ -46,6 +49,7 @@ export function ListingForm({
 
   return (
     <form action={formAction} className="space-y-5">
+      {children}
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2">
           <Label htmlFor="title">Título do anúncio</Label>
@@ -106,7 +110,7 @@ export function ListingForm({
         </div>
         <div>
           <Label htmlFor="whatsapp">WhatsApp (DDD + número)</Label>
-          <Input id="whatsapp" name="whatsapp" placeholder="11999999999" maxLength={11} required defaultValue={defaults?.whatsapp} />
+          <Input id="whatsapp" name="whatsapp" placeholder="(65) 99999-9999" inputMode="tel" maxLength={20} required defaultValue={defaults?.whatsapp} />
         </div>
         <div>
           <Label htmlFor="city">Cidade</Label>
