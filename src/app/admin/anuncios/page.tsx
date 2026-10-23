@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { formatBRL, cn } from "@/lib/utils";
 import { ModerationActions } from "@/components/admin/moderation-actions";
 import Link from "next/link";
+import { Plus } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
 
 export const metadata: Metadata = { title: "Moderação de anúncios" };
 
@@ -42,7 +44,12 @@ export default async function AdminAnunciosPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-neutral-900">Moderação de anúncios</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold text-neutral-900">Anúncios</h1>
+        <Link href="/admin/anuncios/novo" className={buttonVariants({ className: "gap-1.5" })}>
+          <Plus /> Novo anúncio
+        </Link>
+      </div>
 
       <div className="mt-4 flex gap-2 border-b border-neutral-200">
         {tabs.map((tab) => (
@@ -71,7 +78,15 @@ export default async function AdminAnunciosPage({
               </p>
               <Badge variant="secondary" className="mt-1">{statusLabels[listing.status] ?? listing.status}</Badge>
             </div>
-            <ModerationActions listingId={listing.id} status={listing.status} />
+            <div className="flex flex-wrap items-center gap-2">
+              <Link
+                href={`/admin/anuncios/${listing.id}/editar`}
+                className={buttonVariants({ variant: "outline", size: "sm" })}
+              >
+                Editar / fotos
+              </Link>
+              <ModerationActions listingId={listing.id} status={listing.status} />
+            </div>
           </div>
         ))}
         {(listings?.length ?? 0) === 0 && (

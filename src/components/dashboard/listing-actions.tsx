@@ -6,7 +6,15 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { deleteListingAction, setListingStatusAction } from "@/app/painel/anuncios/actions";
 
-export function ListingActions({ listingId, status }: { listingId: string; status: string }) {
+export function ListingActions({
+  listingId,
+  status,
+  afterDeleteHref = "/painel/anuncios",
+}: {
+  listingId: string;
+  status: string;
+  afterDeleteHref?: string;
+}) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -26,7 +34,7 @@ export function ListingActions({ listingId, status }: { listingId: string; statu
     if (!confirm("Tem certeza que deseja excluir este anúncio? Essa ação não pode ser desfeita.")) return;
     startTransition(async () => {
       await deleteListingAction(listingId);
-      router.push("/painel/anuncios");
+      router.push(afterDeleteHref);
     });
   }
 

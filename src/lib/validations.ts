@@ -56,7 +56,7 @@ export const listingSchema = z.object({
   whatsapp: z
     .string()
     .trim()
-    .regex(/^\d{10,11}$/, "Informe um WhatsApp válido com DDD (somente números)"),
+    .regex(/^\d{10,11}$/, "Informe um WhatsApp válido com DDD (ex: 65 99999-9999)"),
 });
 
 export const leadSchema = z.object({
