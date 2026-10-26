@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/auth";
 import { ListingForm } from "@/components/dashboard/listing-form";
 import { ImageUploader } from "@/components/dashboard/image-uploader";
 import { ListingActions } from "@/components/dashboard/listing-actions";
@@ -29,9 +30,7 @@ export default async function AdminEditarAnuncioPage({
   const { id } = await params;
   const search = await searchParams;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) redirect("/entrar?redirect=/admin/anuncios");
 
   const [{ data: listing }, { data: categories }, { data: images }] = await Promise.all([

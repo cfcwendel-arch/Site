@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentProfile, getCurrentUser } from "@/lib/auth";
 import { DashboardSidebar, type SidebarLink } from "@/components/dashboard/sidebar";
 
 const links: SidebarLink[] = [
@@ -14,14 +14,9 @@ const links: SidebarLink[] = [
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const [user, profile] = await Promise.all([getCurrentUser(), getCurrentProfile()]);
   if (!user) redirect("/entrar?redirect=/admin");
-
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  if (profile?.role !== "admin") redirect("/");
+  if (profile?.role !== "admin" || profile.status !== "active") redirect("/");
 
   return (
     <div className="flex min-h-screen bg-neutral-50">

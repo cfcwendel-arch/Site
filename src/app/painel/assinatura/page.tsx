@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Check, Gift, QrCode } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/auth";
 import { formatBRL, cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { cancelSubscriptionAction, payWithPixAction, startFreeTrialAction } from "./actions";
@@ -25,9 +26,7 @@ export default async function AssinaturaPage({
   const { erro, gratis } = await searchParams;
   const errorMessage = subscriptionErrorMessage(erro);
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   const [{ data: plans }, { data: subscription }, { count: previousSubscriptions }] = await Promise.all([
     supabase.from("plans").select("*").eq("active", true).order("position"),
