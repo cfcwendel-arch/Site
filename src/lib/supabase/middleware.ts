@@ -55,19 +55,8 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    if (isAdminRoute && user) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role,status")
-        .eq("id", user.id)
-        .single();
-
-      if (!profile || profile.role !== "admin" || profile.status !== "active") {
-        const url = request.nextUrl.clone();
-        url.pathname = "/";
-        return NextResponse.redirect(url);
-      }
-    }
+    // O papel de admin é conferido no layout do /admin (src/app/admin/layout.tsx); aqui
+    // só garantimos o login, para não fazer a mesma consulta duas vezes por página.
 
     return supabaseResponse;
   } catch (err) {

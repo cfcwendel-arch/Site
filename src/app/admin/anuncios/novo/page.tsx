@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/auth";
 import { ListingForm } from "@/components/dashboard/listing-form";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
@@ -15,9 +16,7 @@ export default async function AdminNovoAnuncioPage({
 }) {
   const { anunciante } = await searchParams;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   const [{ data: categories }, { data: advertisers }] = await Promise.all([
     supabase.from("categories").select("id,name").order("position"),
