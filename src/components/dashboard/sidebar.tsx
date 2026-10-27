@@ -53,12 +53,18 @@ export function DashboardSidebar({
     .sort((a, b) => b.length - a.length)[0];
 
   return (
-    <aside className="flex w-64 shrink-0 flex-col border-r border-neutral-200 bg-white">
-      <div className="border-b border-neutral-200 p-4">
+    // Celular: barra no topo com o menu rolando na horizontal. Computador: menu lateral.
+    <aside className="sticky top-0 z-30 flex shrink-0 flex-col border-b border-neutral-200 bg-white md:h-screen md:w-64 md:border-b-0 md:border-r">
+      <div className="flex items-center justify-between gap-3 px-4 pt-3 md:block md:border-b md:border-neutral-200 md:p-4">
         <Logo />
-        <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">{title}</p>
+        <p className="hidden text-xs font-semibold uppercase tracking-wide text-neutral-500 md:mt-2 md:block">{title}</p>
+        <form action={signOutAction} className="md:hidden">
+          <button type="submit" className="flex items-center gap-1.5 rounded-md px-2 py-2 text-sm font-medium text-neutral-600">
+            <LogOut className="h-4 w-4" /> Sair
+          </button>
+        </form>
       </div>
-      <nav className="flex-1 space-y-1 p-3">
+      <nav className="flex gap-1 overflow-x-auto px-3 py-2 md:flex-1 md:flex-col md:space-y-1 md:overflow-visible md:p-3">
         {links.map((link) => {
           const active = link.href === activeHref;
           const Icon = iconMap[link.icon];
@@ -66,8 +72,11 @@ export function DashboardSidebar({
             <Link
               key={link.href}
               href={link.href}
+              // Sem pré-carregar todas as páginas do menu em segundo plano: cada uma consulta
+              // o banco, e a tela de carregamento já aparece na hora ao clicar.
+              prefetch={false}
               className={cn(
-                "flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm font-medium",
+                "flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-md px-3 py-2.5 text-sm font-medium",
                 active ? "bg-green-50 text-green-800" : "text-neutral-600 hover:bg-neutral-100",
               )}
             >
@@ -77,7 +86,7 @@ export function DashboardSidebar({
           );
         })}
       </nav>
-      <form action={signOutAction} className="border-t border-neutral-200 p-3">
+      <form action={signOutAction} className="hidden border-t border-neutral-200 p-3 md:block">
         <button
           type="submit"
           className="flex w-full items-center gap-2.5 rounded-md px-3 py-2.5 text-sm font-medium text-neutral-600 hover:bg-neutral-100"
