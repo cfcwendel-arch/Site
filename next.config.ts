@@ -1,25 +1,13 @@
 import type { NextConfig } from "next";
+import { buildCsp } from "./src/lib/csp";
 
 const supabaseHost = process.env.NEXT_PUBLIC_SUPABASE_URL
   ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).host
   : undefined;
 
-const csp = [
-  "default-src 'self'",
-  "script-src 'self'",
-  "style-src 'self' 'unsafe-inline'",
-  `img-src 'self' data: blob:${supabaseHost ? ` https://${supabaseHost}` : ""}`,
-  `connect-src 'self'${supabaseHost ? ` https://${supabaseHost} wss://${supabaseHost}` : ""}`,
-  "font-src 'self'",
-  "object-src 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  "frame-ancestors 'none'",
-  "upgrade-insecure-requests",
-].join("; ");
+const csp = buildCsp();
 
 const securityHeaders = [
-  { key: "Content-Security-Policy", value: csp },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
@@ -34,7 +22,15 @@ const nextConfig: NextConfig = {
       : [],
   },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      // Painel e admin recebem a CSP com nonce do middleware (src/middleware.ts); aplicar
+      // esta aqui também somaria as duas e voltaria a bloquear os scripts do Next.
+      {
+        source: "/:path((?!painel(?:/|$)|admin(?:/|$)).*)",
+        headers: [{ key: "Content-Security-Policy", value: csp }],
+      },
+    ];
   },
 };
 
