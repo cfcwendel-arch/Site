@@ -16,7 +16,7 @@ export default async function EntrarPage({
       <h1 className="text-2xl font-bold text-neutral-900">Entrar</h1>
       {params.cadastro === "ok" && (
         <p className="mt-3 rounded-md bg-green-50 p-3 text-sm text-green-800">
-          Conta criada! Confirme seu e-mail (se solicitado) e faça login para continuar.
+          Conta criada! Entre com seu e-mail e senha para continuar.
         </p>
       )}
       <p className="mt-2 text-sm text-neutral-600">
