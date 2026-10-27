@@ -1,38 +1,35 @@
 import { z } from "zod";
 
+/** Telefone com DDD em qualquer formato: "(65) 99999-9999" vira "65999999999". */
+export const phoneSchema = z
+  .string()
+  .transform((v) => v.replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, ""))
+  .pipe(z.string().regex(/^\d{10,11}$/, "Informe o WhatsApp com DDD, ex: (65) 99999-9999"));
+
+/** E-mail sem espaços e em minúsculas (o celular costuma pôr maiúscula na primeira letra). */
+const emailSchema = z.string().trim().toLowerCase().email("E-mail inválido").max(255);
+
+// Cadastro simples a pedido do cliente: senha com no mínimo 6 caracteres, sem exigências extras.
 export const signUpSchema = z.object({
-  fullName: z.string().trim().min(2, "Informe seu nome completo").max(120),
+  fullName: z.string().trim().min(2, "Informe seu nome").max(120),
   companyName: z.string().trim().max(120).optional().or(z.literal("")),
-  email: z.string().trim().email("E-mail inválido").max(255),
-  phone: z
-    .string()
-    .trim()
-    .regex(/^\d{10,11}$/, "Informe um telefone válido com DDD (somente números)"),
-  password: z
-    .string()
-    .min(8, "A senha deve ter pelo menos 8 caracteres")
-    .regex(/[a-z]/, "A senha deve conter uma letra minúscula")
-    .regex(/[A-Z]/, "A senha deve conter uma letra maiúscula")
-    .regex(/[0-9]/, "A senha deve conter um número"),
+  email: emailSchema,
+  phone: phoneSchema,
+  password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres").max(72),
 });
 
 export const signInSchema = z.object({
-  email: z.string().trim().email("E-mail inválido"),
+  email: emailSchema,
   password: z.string().min(1, "Informe sua senha"),
 });
 
 export const requestPasswordResetSchema = z.object({
-  email: z.string().trim().email("E-mail inválido"),
+  email: emailSchema,
 });
 
 export const updatePasswordSchema = z
   .object({
-    password: z
-      .string()
-      .min(8, "A senha deve ter pelo menos 8 caracteres")
-      .regex(/[a-z]/, "A senha deve conter uma letra minúscula")
-      .regex(/[A-Z]/, "A senha deve conter uma letra maiúscula")
-      .regex(/[0-9]/, "A senha deve conter um número"),
+    password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres").max(72),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -63,12 +60,7 @@ export const leadSchema = z.object({
   listingId: z.string().uuid(),
   name: z.string().trim().min(2, "Informe seu nome").max(120),
   email: z.string().trim().email("E-mail inválido").max(255).optional().or(z.literal("")),
-  phone: z
-    .string()
-    .trim()
-    .regex(/^\d{10,11}$/, "Informe um telefone válido com DDD")
-    .optional()
-    .or(z.literal("")),
+  phone: z.literal("").or(phoneSchema).optional(),
   message: z.string().trim().min(5, "Escreva uma mensagem").max(2000),
   // Honeypot field: real users never fill this; bots that auto-fill every input do.
   website: z.string().max(0, "").optional().or(z.literal("")),
@@ -86,10 +78,7 @@ export const planSchema = z.object({
 export const profileUpdateSchema = z.object({
   fullName: z.string().trim().min(2).max(120),
   companyName: z.string().trim().max(120).optional().or(z.literal("")),
-  phone: z
-    .string()
-    .trim()
-    .regex(/^\d{10,11}$/, "Informe um telefone válido com DDD"),
+  phone: phoneSchema,
   document: z.string().trim().max(20).optional().or(z.literal("")),
   city: z.string().trim().max(120).optional().or(z.literal("")),
   state: z.string().trim().max(2).optional().or(z.literal("")),

@@ -47,7 +47,7 @@ export function LeadForm({ listingId, listingTitle }: { listingId: string; listi
       </div>
       <div>
         <Label htmlFor="phone">WhatsApp / Telefone</Label>
-        <Input id="phone" name="phone" placeholder="11999999999" maxLength={11} />
+        <Input id="phone" name="phone" type="tel" inputMode="tel" placeholder="(65) 99999-9999" maxLength={20} />
       </div>
       <div>
         <Label htmlFor="email">E-mail (opcional)</Label>

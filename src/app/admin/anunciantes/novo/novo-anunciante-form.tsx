@@ -36,7 +36,7 @@ export function NovoAnuncianteForm() {
       </div>
       <div>
         <Label htmlFor="phone">WhatsApp (DDD + número)</Label>
-        <Input id="phone" name="phone" required placeholder="11999999999" maxLength={11} />
+        <Input id="phone" name="phone" type="tel" inputMode="tel" required placeholder="(65) 99999-9999" maxLength={20} />
       </div>
       <div>
         <Label htmlFor="password">Senha inicial</Label>

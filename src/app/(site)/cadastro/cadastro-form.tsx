@@ -15,7 +15,7 @@ export function CadastroForm({ plano }: { plano?: string }) {
     <form action={formAction} className="mt-6 space-y-4">
       <input type="hidden" name="plano" value={plano ?? ""} />
       <div>
-        <Label htmlFor="fullName">Nome completo</Label>
+        <Label htmlFor="fullName">Seu nome</Label>
         <Input id="fullName" name="fullName" required maxLength={120} autoComplete="name" />
       </div>
       <div>
@@ -28,12 +28,12 @@ export function CadastroForm({ plano }: { plano?: string }) {
       </div>
       <div>
         <Label htmlFor="phone">WhatsApp (DDD + número)</Label>
-        <Input id="phone" name="phone" required placeholder="11999999999" maxLength={11} autoComplete="tel" />
+        <Input id="phone" name="phone" type="tel" inputMode="tel" required placeholder="(65) 99999-9999" maxLength={20} autoComplete="tel" />
       </div>
       <div>
         <Label htmlFor="password">Senha</Label>
-        <Input id="password" name="password" type="password" required autoComplete="new-password" />
-        <p className="mt-1 text-xs text-neutral-500">Mín. 8 caracteres, com maiúscula, minúscula e número.</p>
+        <Input id="password" name="password" type="password" required minLength={6} autoComplete="new-password" />
+        <p className="mt-1 text-xs text-neutral-500">Mínimo de 6 caracteres.</p>
       </div>
       {state.error && <p className="text-sm text-red-600">{state.error}</p>}
       <Button type="submit" className="w-full" disabled={isPending}>

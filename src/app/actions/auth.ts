@@ -3,6 +3,8 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { getSiteUrl } from "@/lib/site-url";
 import { signUpSchema, signInSchema, requestPasswordResetSchema, updatePasswordSchema } from "@/lib/validations";
 import { rateLimit } from "@/lib/rate-limit";
 import { getClientIp } from "@/lib/get-client-ip";
@@ -26,40 +28,59 @@ export async function signUpAction(_prev: ActionState, formData: FormData): Prom
     return { error: parsed.error.issues[0]?.message ?? "Dados inválidos" };
   }
 
+  const { email, password } = parsed.data;
+  const profileData = {
+    full_name: parsed.data.fullName,
+    company_name: parsed.data.companyName || null,
+    phone: parsed.data.phone,
+  };
+  const alreadyRegistered = "Este e-mail já está cadastrado. Entre com sua senha ou use “Esqueci minha senha”.";
+
+  // Sem confirmação de e-mail (pedido do cliente): a conta já nasce confirmada e o
+  // anunciante entra na hora. Com a chave de serviço, cria pelo Admin API; sem ela, usa o
+  // cadastro normal (o gatilho auto_confirm_user no banco confirma a conta).
+  let admin: ReturnType<typeof createAdminClient> | null = null;
+  try {
+    admin = createAdminClient();
+  } catch {
+    admin = null;
+  }
+
   const supabase = await createClient();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-  const { error } = await supabase.auth.signUp({
-    email: parsed.data.email,
-    password: parsed.data.password,
-    options: {
-      data: {
-        full_name: parsed.data.fullName,
-        company_name: parsed.data.companyName || null,
-        phone: parsed.data.phone,
-      },
-      emailRedirectTo: `${siteUrl}/auth/callback?next=/painel`,
-    },
-  });
 
-  if (error) {
-    return { error: error.message.includes("already registered") ? "Este e-mail já está cadastrado." : "Não foi possível criar sua conta." };
+  if (admin) {
+    const { data: created, error } = await admin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: profileData,
+    });
+    if (error || !created.user) {
+      const exists = error?.code === "email_exists" || error?.message.toLowerCase().includes("already");
+      return { error: exists ? alreadyRegistered : "Não foi possível criar sua conta. Tente novamente." };
+    }
+    await admin.from("profiles").update(profileData).eq("id", created.user.id);
+  } else {
+    const siteUrl = await getSiteUrl();
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: profileData, emailRedirectTo: `${siteUrl}/auth/callback?next=/painel` },
+    });
+    // Falha só no envio do e-mail de confirmação não impede a conta de existir.
+    if (error && !error.message.toLowerCase().includes("email")) {
+      return {
+        error: error.message.toLowerCase().includes("already") ? alreadyRegistered : "Não foi possível criar sua conta.",
+      };
+    }
   }
 
-  // Persist the extra profile fields (the DB trigger only sets id/email/role on signup).
-  const { data: userResult } = await supabase.auth.getUser();
-  if (userResult.user) {
-    await supabase
-      .from("profiles")
-      .update({
-        full_name: parsed.data.fullName,
-        company_name: parsed.data.companyName || null,
-        phone: parsed.data.phone,
-      })
-      .eq("id", userResult.user.id);
-  }
+  // Entra direto, sem precisar abrir e-mail nenhum.
+  const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+  if (signInError) redirect("/entrar?cadastro=ok");
 
   const plano = formData.get("plano");
-  redirect(userResult.user ? `/painel${plano ? `?plano=${plano}` : ""}` : "/entrar?cadastro=ok");
+  redirect(`/painel/assinatura${plano ? `?plano=${plano}` : ""}`);
 }
 
 export async function signInAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
@@ -93,7 +114,14 @@ export async function signInAction(_prev: ActionState, formData: FormData): Prom
   }
 
   const redirectTo = String(formData.get("redirectTo") || "");
-  redirect(redirectTo || "/painel");
+  if (redirectTo.startsWith("/") && !redirectTo.startsWith("//")) redirect(redirectTo);
+
+  // Admin vai direto para o /admin (antes passava pelo /painel e era redirecionado).
+  const { data: userData } = await supabase.auth.getUser();
+  const { data: profile } = userData.user
+    ? await supabase.from("profiles").select("role").eq("id", userData.user.id).maybeSingle()
+    : { data: null };
+  redirect(profile?.role === "admin" ? "/admin" : "/painel");
 }
 
 export async function signOutAction() {
@@ -115,7 +143,7 @@ export async function requestPasswordResetAction(
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "E-mail inválido" };
 
   const supabase = await createClient();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const siteUrl = await getSiteUrl();
   await supabase.auth.resetPasswordForEmail(parsed.data.email, {
     redirectTo: `${siteUrl}/auth/callback?next=/redefinir-senha`,
   });
