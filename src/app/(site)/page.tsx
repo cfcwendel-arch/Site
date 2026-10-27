@@ -9,8 +9,8 @@ import { AD_PLACEMENTS, getActiveAds } from "@/lib/ads";
 import * as LucideIcons from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// Página servida pronta do cache e renovada a cada 60s (ou na hora, após mudanças no admin).
-export const revalidate = 60;
+// Página servida pronta do cache e renovada a cada 1h (ou na hora, após mudanças no admin).
+export const revalidate = 3600;
 
 export default async function HomePage() {
   const [categories, featured, homeAds] = await Promise.all([

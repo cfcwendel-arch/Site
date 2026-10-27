@@ -29,5 +29,5 @@ async function fetchActiveAds(placement: AdPlacement): Promise<Ad[]> {
 
 export const getActiveAds = unstable_cache(fetchActiveAds, ["active-ads"], {
   tags: [PUBLIC_TAGS.ads],
-  revalidate: 60,
+  revalidate: 3600,
 });

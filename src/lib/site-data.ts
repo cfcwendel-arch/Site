@@ -9,7 +9,7 @@ export const getActivePlans = unstable_cache(
     return data ?? [];
   },
   ["active-plans"],
-  { tags: [PUBLIC_TAGS.plans], revalidate: 300 },
+  { tags: [PUBLIC_TAGS.plans], revalidate: 3600 },
 );
 
 export const getPublicSettings = unstable_cache(
@@ -21,5 +21,5 @@ export const getPublicSettings = unstable_cache(
     return data;
   },
   ["public-settings"],
-  { tags: [PUBLIC_TAGS.settings], revalidate: 300 },
+  { tags: [PUBLIC_TAGS.settings], revalidate: 3600 },
 );

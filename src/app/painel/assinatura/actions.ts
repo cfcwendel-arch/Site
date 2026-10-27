@@ -4,8 +4,6 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getPreApprovalClient } from "@/lib/mercadopago";
-import { getSupportWhatsappLink } from "@/lib/support-whatsapp";
-import { formatBRL } from "@/lib/utils";
 
 /** Primeiro mês grátis: só para quem nunca teve assinatura (regra reforçada no banco). */
 export async function startFreeTrialAction(planId: string): Promise<void> {
@@ -50,9 +48,10 @@ export async function cancelSubscriptionAction(subscriptionId: string): Promise<
 }
 
 /**
- * Pagamento via Pix direto com a AgroNegocia (sem Mercado Pago): registra o pedido como
- * assinatura pendente e leva o anunciante ao WhatsApp do Wendel com a mensagem pronta.
- * Depois de receber o Pix, o admin confirma em Admin → Anunciantes, o que libera 1 mês.
+ * Pagamento via Pix direto com a AgroNegocia (sem gateway): registra o pedido como
+ * assinatura pendente e mostra a chave Pix do Wendel, o QR Code e o Copia e Cola com o
+ * valor do plano. O anunciante paga, manda o comprovante no WhatsApp e o admin confirma
+ * em Admin → Anunciantes, o que libera 1 mês.
  * - Sem assinatura: cria uma pendente para o plano escolhido.
  * - Já tem assinatura paga por Pix ou mês grátis (pendente, ativa ou vencida): renova a mesma.
  */
@@ -95,23 +94,7 @@ export async function payWithPixAction(planId: string): Promise<void> {
     subscriptionId = createdId;
   }
 
-  const [{ data: subscription }, { data: profile }] = await Promise.all([
-    supabase.from("subscriptions").select("plans(name, price_cents)").eq("id", subscriptionId).maybeSingle(),
-    supabase.from("profiles").select("full_name, company_name").eq("id", user.id).maybeSingle(),
-  ]);
-  const plan = subscription?.plans;
-  if (!plan) redirect("/painel/assinatura?erro=plano_invalido");
-
-  const name = profile?.company_name || profile?.full_name;
-  const message = [
-    `Olá! Quero pagar via Pix o plano ${plan.name} (${formatBRL(plan.price_cents)}/mês) no AgroNegocia.`,
-    name ? `Nome: ${name}` : null,
-    `E-mail do cadastro: ${user.email}`,
-  ]
-    .filter(Boolean)
-    .join("\n");
-
-  const link = await getSupportWhatsappLink(message);
   revalidatePath("/painel/assinatura");
-  redirect(link ?? "/contato");
+  // Tela com a chave Pix, o QR Code e o Copia e Cola já com o valor do plano.
+  redirect(`/painel/assinatura/pix?assinatura=${subscriptionId}`);
 }

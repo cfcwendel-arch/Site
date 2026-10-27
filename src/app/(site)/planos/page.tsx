@@ -6,7 +6,7 @@ import { formatBRL, cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
 export const metadata: Metadata = { title: "Planos para anunciantes" };
-export const revalidate = 300;
+export const revalidate = 3600;
 
 export default async function PlanosPage() {
   const plans = await getActivePlans();

@@ -75,23 +75,23 @@ async function fetchListingBySlug(slug: string) {
 
 // Dados públicos em cache: as páginas não consultam o banco a cada visita. Mudanças feitas
 // pelo admin/anunciante limpam o cache na hora (refreshPublicSite); fora isso, renova a
-// cada 60s.
+// cada 1h (cada renovação é uma execução cobrada no Netlify).
 export const getCategories = unstable_cache(fetchCategories, ["categories"], {
   tags: [PUBLIC_TAGS.categories],
-  revalidate: 300,
+  revalidate: 3600,
 });
 
 export const getApprovedListings = unstable_cache(fetchApprovedListings, ["approved-listings"], {
   tags: [PUBLIC_TAGS.listings, PUBLIC_TAGS.categories],
-  revalidate: 60,
+  revalidate: 3600,
 });
 
 export const getFeaturedListings = unstable_cache(fetchFeaturedListings, ["featured-listings"], {
   tags: [PUBLIC_TAGS.listings],
-  revalidate: 60,
+  revalidate: 3600,
 });
 
 export const getListingBySlug = unstable_cache(fetchListingBySlug, ["listing-by-slug"], {
   tags: [PUBLIC_TAGS.listings],
-  revalidate: 60,
+  revalidate: 3600,
 });
