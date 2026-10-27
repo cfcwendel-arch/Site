@@ -77,8 +77,8 @@ export default async function AssinaturaPage({
             </p>
             {subscription.status === "pending" && paidWithPix && (
               <p className="mt-1 text-sm text-neutral-600">
-                Pedido registrado. Combine o Pix pelo WhatsApp; assim que o pagamento for confirmado,
-                seu plano é liberado.
+                Pedido registrado. Pague pelo QR Code do Pix e envie o comprovante no WhatsApp; assim
+                que o pagamento for conferido, seu plano é liberado.
               </p>
             )}
             {paidWithPix && periodEndLabel && subscription.status === "active" && (
@@ -102,7 +102,7 @@ export default async function AssinaturaPage({
                 <Button type="submit" size="sm" className="gap-1.5">
                   <QrCode />{" "}
                   {subscription.status === "pending"
-                    ? "Falar no WhatsApp para pagar"
+                    ? "Ver QR Code do Pix"
                     : subscription.is_trial
                       ? "Assinar com Pix"
                       : !expired
@@ -137,8 +137,8 @@ export default async function AssinaturaPage({
           )}
           <p className="mt-4 text-sm text-neutral-600">
             Escolha um plano para começar a publicar seus anúncios. O pagamento é por Pix: ao clicar
-            em “Pagar com Pix”, você fala direto com a AgroNegocia no WhatsApp, recebe a chave Pix
-            e, após a confirmação, seu plano fica liberado por 1 mês.
+            em “Pagar com Pix”, aparece o QR Code com o valor do plano. Depois de pagar, envie o
+            comprovante no WhatsApp e seu plano fica liberado por 1 mês.
           </p>
           <div className="mt-6 grid gap-6 md:grid-cols-3">
             {(plans ?? []).map((plan, index) => {

@@ -93,9 +93,11 @@ confundir com os anúncios dos clientes. Cada banner pode ter link e período de
 O **Pix é a única forma de pagamento** e é feito direto com a AgroNegocia, sem gateway:
 
 1. Em `/painel/assinatura`, o anunciante escolhe o plano e clica em **Pagar com Pix**.
-2. O site registra o pedido (assinatura pendente) e abre o WhatsApp do Wendel com a
-   mensagem pronta (plano, valor, nome e e-mail do cadastro).
-3. O Wendel passa a chave Pix e, ao receber, entra em **Admin → Anunciantes → (anunciante)**
+2. O site registra o pedido (assinatura pendente) e mostra o QR Code / Pix Copia e Cola
+   (Pix estático, padrão BR Code) com a chave do Wendel e o valor do plano já preenchido —
+   chave, nome e cidade ficam em `src/lib/pix-static.ts`.
+3. O anunciante paga e envia o comprovante pelo botão do WhatsApp. Ao receber, o Wendel
+   entra em **Admin → Anunciantes → (anunciante)**
    e clica em **Confirmar Pix recebido (+1 mês)**. Pedidos pendentes também aparecem na
    visão geral do admin.
 4. Para renovar, o anunciante clica em **Renovar com Pix** e o processo se repete; o mês

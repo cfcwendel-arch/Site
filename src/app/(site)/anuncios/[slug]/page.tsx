@@ -12,8 +12,8 @@ import { ListingViewTracker } from "@/components/site/listing-view-tracker";
 import { AdBanner } from "@/components/site/ad-banner";
 import { getActiveAds } from "@/lib/ads";
 
-// Servida pronta do cache, renovada a cada 60s (ou na hora, após edição/moderação).
-export const revalidate = 60;
+// Servida pronta do cache, renovada a cada 1h (ou na hora, após edição/moderação).
+export const revalidate = 3600;
 
 // Nenhuma página gerada no build: cada anúncio é gerado na primeira visita e fica em cache.
 export async function generateStaticParams() {

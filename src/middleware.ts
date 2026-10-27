@@ -5,8 +5,8 @@ export async function middleware(request: NextRequest) {
   return await updateSession(request);
 }
 
+// Só nas áreas logadas. As páginas públicas saem prontas do cache e resolvem o login no
+// navegador — rodar o middleware nelas só gastava créditos do Netlify a cada visita.
 export const config = {
-  matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-  ],
+  matcher: ["/painel/:path*", "/admin/:path*"],
 };

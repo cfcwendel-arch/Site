@@ -3,7 +3,7 @@ import { Mail, Phone } from "lucide-react";
 import { getPublicSettings } from "@/lib/site-data";
 
 export const metadata: Metadata = { title: "Contato" };
-export const revalidate = 300;
+export const revalidate = 3600;
 
 export default async function ContatoPage() {
   const settings = await getPublicSettings();
