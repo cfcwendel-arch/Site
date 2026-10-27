@@ -19,9 +19,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (profile?.role !== "admin" || profile.status !== "active") redirect("/");
 
   return (
-    <div className="flex min-h-screen bg-neutral-50">
+    <div className="flex min-h-screen flex-col bg-neutral-50 md:flex-row">
       <DashboardSidebar links={links} title="Painel administrativo" />
-      <main className="flex-1 p-6 lg:p-10">{children}</main>
+      <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-10">{children}</main>
     </div>
   );
 }

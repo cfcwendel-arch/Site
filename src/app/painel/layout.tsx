@@ -18,9 +18,9 @@ export default async function PainelLayout({ children }: { children: React.React
   if (profile?.status === "suspended") redirect("/conta-suspensa");
 
   return (
-    <div className="flex min-h-screen bg-neutral-50">
+    <div className="flex min-h-screen flex-col bg-neutral-50 md:flex-row">
       <DashboardSidebar links={links} title="Painel do anunciante" />
-      <main className="flex-1 p-6 lg:p-10">{children}</main>
+      <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-10">{children}</main>
     </div>
   );
 }
