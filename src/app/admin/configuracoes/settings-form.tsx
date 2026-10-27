@@ -34,7 +34,7 @@ export function SettingsForm({ settings }: { settings: Tables<"site_settings"> |
       </div>
       <div>
         <Label htmlFor="supportPhone">WhatsApp de suporte (DDD + número)</Label>
-        <Input id="supportPhone" name="supportPhone" maxLength={11} defaultValue={settings?.support_phone ?? ""} />
+        <Input id="supportPhone" name="supportPhone" maxLength={20} placeholder="(65) 99999-9999" defaultValue={settings?.support_phone ?? ""} />
       </div>
       {state.error && <p className="text-sm text-red-600">{state.error}</p>}
       {state.success && <p className="text-sm text-green-700">Configurações salvas.</p>}

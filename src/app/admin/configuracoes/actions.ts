@@ -8,7 +8,7 @@ import type { ActionState } from "@/app/actions/auth";
 export async function updateSiteSettingsAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const commissionPercent = Number(formData.get("commissionPercent") ?? 0);
   const supportEmail = String(formData.get("supportEmail") ?? "").trim();
-  const supportPhone = String(formData.get("supportPhone") ?? "").trim();
+  const supportPhone = String(formData.get("supportPhone") ?? "").replace(/\D/g, "");
 
   if (!Number.isFinite(commissionPercent) || commissionPercent < 0 || commissionPercent > 100) {
     return { error: "Comissão inválida (0 a 100)." };

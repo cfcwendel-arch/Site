@@ -25,7 +25,7 @@ export function PerfilForm({ profile }: { profile: Tables<"profiles"> }) {
       </div>
       <div>
         <Label htmlFor="phone">WhatsApp</Label>
-        <Input id="phone" name="phone" required defaultValue={profile.phone ?? ""} maxLength={11} />
+        <Input id="phone" name="phone" required defaultValue={profile.phone ?? ""} type="tel" inputMode="tel" maxLength={20} />
       </div>
       <div>
         <Label htmlFor="document">CPF/CNPJ</Label>

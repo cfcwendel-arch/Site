@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { refreshPublicSite } from "@/lib/public-cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { phoneSchema } from "@/lib/validations";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { ActionState } from "@/app/actions/auth";
@@ -31,17 +32,9 @@ export async function setAdvertiserStatusAction(profileId: string, status: "acti
 const createAdvertiserSchema = z.object({
   fullName: z.string().trim().min(2, "Informe o nome completo").max(120),
   companyName: z.string().trim().max(120).optional().or(z.literal("")),
-  email: z.string().trim().email("E-mail inválido").max(255),
-  phone: z
-    .string()
-    .trim()
-    .regex(/^\d{10,11}$/, "Informe um telefone válido com DDD (somente números)"),
-  password: z
-    .string()
-    .min(8, "A senha deve ter pelo menos 8 caracteres")
-    .regex(/[a-z]/, "A senha deve conter uma letra minúscula")
-    .regex(/[A-Z]/, "A senha deve conter uma letra maiúscula")
-    .regex(/[0-9]/, "A senha deve conter um número"),
+  email: z.string().trim().toLowerCase().email("E-mail inválido").max(255),
+  phone: phoneSchema,
+  password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres").max(72),
 });
 
 export async function createAdvertiserAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
