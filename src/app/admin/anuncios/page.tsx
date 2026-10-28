@@ -30,7 +30,8 @@ export default async function AdminAnunciosPage({
   searchParams: Promise<{ status?: string }>;
 }) {
   const { status } = await searchParams;
-  const activeStatus = status ?? "pending_review";
+  // Os anúncios entram no ar direto (sem fila de aprovação), então abre nos aprovados.
+  const activeStatus = status ?? "approved";
 
   const supabase = await createClient();
   let query = supabase

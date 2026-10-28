@@ -50,7 +50,7 @@ export default async function MeusAnunciosPage({
 
       {publicado && (
         <p className="mt-4 rounded-md bg-green-50 p-3 text-sm text-green-800">
-          ✅ Anúncio enviado! Ele aparece no site assim que for aprovado pela equipe AgroNegocia.
+          ✅ Anúncio publicado! Ele já está no ar no site.
           {fotos_falharam && ` Atenção: ${fotos_falharam} foto(s) não subiram — toque em Editar para tentar de novo.`}
         </p>
       )}
