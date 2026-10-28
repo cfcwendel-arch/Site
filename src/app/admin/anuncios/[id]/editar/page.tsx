@@ -25,7 +25,7 @@ export default async function AdminEditarAnuncioPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ created?: string }>;
+  searchParams: Promise<{ created?: string; publicado?: string; fotos_falharam?: string }>;
 }) {
   const { id } = await params;
   const search = await searchParams;
@@ -67,10 +67,12 @@ export default async function AdminEditarAnuncioPage({
         </div>
       </div>
 
-      {search.created && (
+      {(search.created || search.publicado) && (
         <p className="mt-3 rounded-md bg-green-50 p-3 text-sm text-green-800">
-          Anúncio publicado! Agora adicione as fotos abaixo (pode selecionar várias de uma vez).
-          A primeira foto é a capa.
+          ✅ Anúncio publicado e já está no ar!
+          {search.fotos_falharam
+            ? ` Atenção: ${search.fotos_falharam} foto(s) não subiram — adicione de novo abaixo.`
+            : " Se quiser, adicione ou troque fotos abaixo."}
         </p>
       )}
 

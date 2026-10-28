@@ -85,6 +85,26 @@ export default async function ListingDetailPage({
             </div>
           )}
 
+          {listing.video_paths.length > 0 && (
+            <div className="mt-6">
+              <h2 className="font-semibold text-neutral-900">Vídeos</h2>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                {listing.video_paths.map((src) => (
+                  <video
+                    key={src}
+                    src={src}
+                    controls
+                    playsInline
+                    // Só baixa o vídeo quando o visitante dá play (economiza dados e banda).
+                    preload="none"
+                    poster={src.startsWith("/") ? src.replace(/\.mp4$/, ".jpg") : undefined}
+                    className="aspect-video w-full rounded-lg bg-black object-contain"
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
           {inlineAds[0] && <AdBanner ad={inlineAds[0]} variant="wide" className="mt-6" />}
 
           <div className="mt-8">

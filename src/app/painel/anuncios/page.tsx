@@ -24,7 +24,12 @@ const statusLabels: Record<string, string> = {
   paused: "Pausado",
 };
 
-export default async function MeusAnunciosPage() {
+export default async function MeusAnunciosPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ publicado?: string; fotos_falharam?: string }>;
+}) {
+  const { publicado, fotos_falharam } = await searchParams;
   const supabase = await createClient();
   const user = await getCurrentUser();
 
@@ -43,10 +48,17 @@ export default async function MeusAnunciosPage() {
         </Link>
       </div>
 
+      {publicado && (
+        <p className="mt-4 rounded-md bg-green-50 p-3 text-sm text-green-800">
+          ✅ Anúncio enviado! Ele aparece no site assim que for aprovado pela equipe AgroNegocia.
+          {fotos_falharam && ` Atenção: ${fotos_falharam} foto(s) não subiram — toque em Editar para tentar de novo.`}
+        </p>
+      )}
+
       {(listings?.length ?? 0) === 0 ? (
         <p className="mt-8 text-sm text-neutral-500">Você ainda não publicou nenhum anúncio.</p>
       ) : (
-        <div className="mt-6 overflow-hidden rounded-lg border border-neutral-200 bg-white">
+        <div className="mt-6 overflow-x-auto rounded-lg border border-neutral-200 bg-white">
           <table className="w-full text-left text-sm">
             <thead className="bg-neutral-50 text-xs uppercase text-neutral-500">
               <tr>

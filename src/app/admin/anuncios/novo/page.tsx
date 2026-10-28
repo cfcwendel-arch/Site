@@ -2,10 +2,10 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
-import { ListingForm } from "@/components/dashboard/listing-form";
+import { NewListingForm } from "@/components/dashboard/new-listing-form";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
-import { createListingAsAdminAction } from "@/app/admin/anuncios/actions";
+import { createListingForAdvertiserAction } from "@/app/admin/anuncios/actions";
 
 export const metadata: Metadata = { title: "Novo anúncio" };
 
@@ -39,11 +39,15 @@ export default async function AdminNovoAnuncioPage({
     <div className="max-w-3xl">
       <h1 className="text-2xl font-bold text-neutral-900">Novo anúncio</h1>
       <p className="mt-1 text-sm text-neutral-600">
-        Preencha os dados e clique em “Publicar”. O anúncio já entra no ar aprovado. Na próxima
-        tela você adiciona as fotos.
+        Escolha o anunciante, adicione as fotos, preencha os dados e clique em “Publicar anúncio”.
+        O anúncio já entra no ar aprovado.
       </p>
-      <div className="mt-6 rounded-lg border border-neutral-200 bg-white p-6">
-        <ListingForm action={createListingAsAdminAction} categories={categories ?? []} submitLabel="Publicar anúncio">
+      <div className="mt-6 rounded-lg border border-neutral-200 bg-white p-4 sm:p-6">
+        <NewListingForm
+          categories={categories ?? []}
+          createAction={createListingForAdvertiserAction}
+          doneHref="/admin/anuncios/:id/editar"
+        >
           <div>
             <Label htmlFor="advertiserId">Anunciante (de quem é a máquina)</Label>
             <Select id="advertiserId" name="advertiserId" required defaultValue={selected ?? ""}>
@@ -63,7 +67,7 @@ export default async function AdminNovoAnuncioPage({
               </Link>
             </p>
           </div>
-        </ListingForm>
+        </NewListingForm>
       </div>
     </div>
   );
