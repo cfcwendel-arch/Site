@@ -171,6 +171,7 @@ export type Database = {
           status: string
           title: string
           updated_at: string
+          video_paths: string[]
           views: number
           whatsapp: string | null
           year: number | null
@@ -194,6 +195,7 @@ export type Database = {
           status?: string
           title: string
           updated_at?: string
+          video_paths?: string[]
           views?: number
           whatsapp?: string | null
           year?: number | null
@@ -217,6 +219,7 @@ export type Database = {
           status?: string
           title?: string
           updated_at?: string
+          video_paths?: string[]
           views?: number
           whatsapp?: string | null
           year?: number | null

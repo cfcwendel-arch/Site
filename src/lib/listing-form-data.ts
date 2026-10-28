@@ -1,8 +1,21 @@
 import { listingSchema } from "@/lib/validations";
 
+/**
+ * Preço digitado do jeito brasileiro: "98.900", "98.900,00", "98900" ou "98900,50".
+ * Antes o campo era numérico e "98.900" virava 98,9 (o ponto de milhar era lido como
+ * vírgula decimal) — os anúncios saíam com o preço mil vezes menor.
+ */
+export function parsePriceReais(raw: string) {
+  const v = raw.replace(/[R$\s]/g, "");
+  if (!v) return NaN;
+  if (v.includes(",")) return Number(v.replace(/\./g, "").replace(",", "."));
+  if (/^\d{1,3}(\.\d{3})+$/.test(v)) return Number(v.replace(/\./g, ""));
+  return Number(v);
+}
+
 /** Lê o formulário de anúncio (painel do anunciante e admin). */
 export function parseListingForm(formData: FormData) {
-  const priceReais = Number(formData.get("priceReais") ?? 0);
+  const priceReais = parsePriceReais(String(formData.get("priceReais") ?? ""));
   const priceCents = Number.isFinite(priceReais) ? Math.round(priceReais * 100) : NaN;
 
   return listingSchema.safeParse({

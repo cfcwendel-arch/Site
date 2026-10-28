@@ -4,13 +4,12 @@ import { useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import { toast } from "sonner";
 import { Trash2, Upload } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
+import { uploadListingPhotos } from "@/lib/listing-photos-upload";
 import { listingImageUrl } from "@/lib/storage";
 import { deleteListingImageAction } from "@/app/painel/anuncios/actions";
 
-const MAX_FILES = 12;
-const MAX_SIZE = 5 * 1024 * 1024;
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const MAX_FILES = 20;
 
 type ListingImage = { id: string; path: string; position: number };
 
@@ -24,58 +23,36 @@ export function ImageUploader({
   initialImages: ListingImage[];
 }) {
   const [images, setImages] = useState(initialImages);
-  const [isUploading, setIsUploading] = useState(false);
+  const [progress, setProgress] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const inputRef = useRef<HTMLInputElement>(null);
-  const supabase = createClient();
+  const router = useRouter();
+  const isUploading = progress !== null;
 
-  async function handleFiles(files: FileList | null) {
-    if (!files || files.length === 0) return;
-    if (images.length + files.length > MAX_FILES) {
+  async function handleFiles(fileList: FileList | null) {
+    if (!fileList || fileList.length === 0) return;
+    const files = Array.from(fileList).slice(0, MAX_FILES - images.length);
+    if (files.length === 0) {
       toast.error(`Máximo de ${MAX_FILES} fotos por anúncio.`);
       return;
     }
 
-    setIsUploading(true);
-    for (const file of Array.from(files)) {
-      if (!ALLOWED_TYPES.includes(file.type)) {
-        toast.error(`Tipo de arquivo não suportado: ${file.name}`);
-        continue;
-      }
-      if (file.size > MAX_SIZE) {
-        toast.error(`Arquivo muito grande (máx. 5MB): ${file.name}`);
-        continue;
-      }
-
-      const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
-      const path = `${userId}/${listingId}/${crypto.randomUUID()}.${ext}`;
-
-      const { error: uploadError } = await supabase.storage.from("listing-images").upload(path, file, {
-        cacheControl: "3600",
-        upsert: false,
-        contentType: file.type,
-      });
-
-      if (uploadError) {
-        toast.error(`Falha ao enviar ${file.name}`);
-        continue;
-      }
-
-      const { data: inserted, error: insertError } = await supabase
-        .from("listing_images")
-        .insert({ listing_id: listingId, path, position: images.length })
-        .select("id, path, position")
-        .single();
-
-      if (insertError || !inserted) {
-        toast.error(`Falha ao registrar ${file.name}`);
-        continue;
-      }
-
-      setImages((prev) => [...prev, inserted]);
-    }
-    setIsUploading(false);
+    setProgress(`Enviando 0 de ${files.length}...`);
+    const startPosition = images.reduce((max, img) => Math.max(max, img.position + 1), 0);
+    const { uploaded, failed } = await uploadListingPhotos({
+      listingId,
+      uploaderId: userId,
+      files,
+      startPosition,
+      onProgress: (done, total) => setProgress(`Enviando ${done} de ${total}...`),
+    });
+    setImages((prev) => [...prev, ...uploaded]);
+    setProgress(null);
     if (inputRef.current) inputRef.current.value = "";
+
+    if (uploaded.length) toast.success(`${uploaded.length} foto(s) adicionada(s).`);
+    if (failed.length) toast.error(`Não foi possível enviar: ${failed.join(", ")}`);
+    router.refresh();
   }
 
   function handleDelete(image: ListingImage) {
@@ -88,14 +65,19 @@ export function ImageUploader({
   return (
     <div>
       <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
-        {images.map((image) => (
+        {[...images].sort((a, b) => a.position - b.position).map((image, index) => (
           <div key={image.id} className="group relative aspect-square overflow-hidden rounded-md border border-neutral-200">
             <Image src={listingImageUrl(image.path)} alt="Foto do anúncio" fill sizes="150px" className="object-cover" />
+            {index === 0 && (
+              <span className="absolute bottom-1 left-1 rounded bg-green-700 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                Capa
+              </span>
+            )}
             <button
               type="button"
               onClick={() => handleDelete(image)}
               disabled={isPending}
-              className="absolute right-1 top-1 rounded-full bg-black/60 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
+              className="absolute right-1 top-1 rounded-full bg-black/70 p-1.5 text-white"
               aria-label="Remover foto"
             >
               <Trash2 className="h-3.5 w-3.5" />
@@ -103,13 +85,13 @@ export function ImageUploader({
           </div>
         ))}
 
-        <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-md border border-dashed border-neutral-300 text-neutral-500 hover:border-green-600 hover:text-green-700">
-          <Upload className="h-5 w-5" />
-          <span className="text-xs">{isUploading ? "Enviando..." : "Adicionar"}</span>
+        <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-md border-2 border-dashed border-green-600/50 bg-green-50 p-2 text-center text-green-800 hover:border-green-600">
+          <Upload className="h-6 w-6" />
+          <span className="text-xs font-semibold">{progress ?? "Adicionar fotos"}</span>
           <input
             ref={inputRef}
             type="file"
-            accept="image/jpeg,image/png,image/webp"
+            accept="image/*"
             multiple
             className="hidden"
             disabled={isUploading}
@@ -117,7 +99,10 @@ export function ImageUploader({
           />
         </label>
       </div>
-      <p className="mt-2 text-xs text-neutral-500">JPG, PNG ou WebP, até 5MB cada, máx. {MAX_FILES} fotos.</p>
+      <p className="mt-2 text-xs text-neutral-500">
+        Pode escolher várias fotos de uma vez, direto da galeria do celular (até {MAX_FILES}). A
+        primeira foto é a capa do anúncio. As fotos são reduzidas automaticamente.
+      </p>
     </div>
   );
 }
