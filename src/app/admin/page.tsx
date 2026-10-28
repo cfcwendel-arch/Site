@@ -10,9 +10,9 @@ export const metadata: Metadata = { title: "Painel admin" };
 export default async function AdminOverviewPage() {
   const supabase = await createClient();
 
-  const [advertisersCount, pendingListingsCount, activeSubs, settings, pendingPix] = await Promise.all([
+  const [advertisersCount, liveListingsCount, activeSubs, settings, pendingPix] = await Promise.all([
     supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "advertiser"),
-    supabase.from("listings").select("id", { count: "exact", head: true }).eq("status", "pending_review"),
+    supabase.from("listings").select("id", { count: "exact", head: true }).eq("status", "approved"),
     supabase.from("subscriptions").select("*, plans(price_cents)").eq("status", "active"),
     supabase.from("site_settings").select("commission_percent").single(),
     supabase
@@ -43,14 +43,12 @@ export default async function AdminOverviewPage() {
           <CardContent><p className="text-2xl font-bold">{formatBRL(mrr)}</p></CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle className="text-sm text-neutral-500">Anúncios em análise</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-sm text-neutral-500">Anúncios no ar</CardTitle></CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">{pendingListingsCount.count ?? 0}</p>
-            {(pendingListingsCount.count ?? 0) > 0 && (
-              <Link href="/admin/anuncios?status=pending_review" className="text-xs font-medium text-green-700 hover:underline">
-                Ver fila de moderação
-              </Link>
-            )}
+            <p className="text-2xl font-bold">{liveListingsCount.count ?? 0}</p>
+            <Link href="/admin/anuncios?status=approved" className="text-xs font-medium text-green-700 hover:underline">
+              Ver anúncios
+            </Link>
           </CardContent>
         </Card>
       </div>
@@ -91,8 +89,11 @@ export default async function AdminOverviewPage() {
       </div>
 
       <div className="mt-8 flex flex-wrap gap-3">
-        <Link href="/admin/anuncios?status=pending_review" className={buttonVariants()}>
-          Moderar anúncios
+        <Link href="/admin/anuncios/novo" className={buttonVariants()}>
+          Novo anúncio
+        </Link>
+        <Link href="/admin/anuncios" className={buttonVariants({ variant: "outline" })}>
+          Ver anúncios
         </Link>
         <Link href="/admin/anunciantes" className={buttonVariants({ variant: "outline" })}>
           Ver anunciantes

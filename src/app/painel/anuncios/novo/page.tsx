@@ -19,7 +19,7 @@ export default async function NovoAnuncioPage() {
       <h1 className="text-2xl font-bold text-neutral-900">Novo anúncio</h1>
       <p className="mt-1 text-sm text-neutral-600">
         Adicione as fotos, preencha os dados e toque em <strong>Publicar anúncio</strong>. Seu anúncio
-        passa por uma rápida análise e aparece no site assim que for aprovado.
+        entra no ar na hora.
       </p>
       <div className="mt-6 rounded-lg border border-neutral-200 bg-white p-4 sm:p-6">
         <NewListingForm
